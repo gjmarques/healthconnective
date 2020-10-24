@@ -1,9 +1,10 @@
+Directory service is composed of a Django server and a PostGIS database:
 DO NOT USE docker-compose, known issues with Django connecting to database.
 
-Run Django server:
+-Run Django server:
 
-python3 manage.py runserver
+  python3 manage.py runserver
 
-Create PostGIS container:
+-Create PostGIS container:
 
-docker run --name "postgis" -p 5432:5432 -d -t kartoza/postgis
+  docker run --name "postgis" -p 5432:5432 -d -t kartoza/postgis
