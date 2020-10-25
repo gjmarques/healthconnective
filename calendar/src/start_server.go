@@ -1,6 +1,7 @@
 package main
 
 import(
+	//"./calendar_support"
 	"fmt"
 	//"strconv"
 	"net/http"
@@ -10,9 +11,36 @@ import(
 )
 
 
-func process(w http.ResponseWriter, r *http.Request){
-	//tmp.ProcessRequests(w,r)
-	
+func processAdd(w http.ResponseWriter, r *http.Request){
+	if r.Method == "POST"{
+
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+}
+
+func processModify(w http.ResponseWriter, r *http.Request){
+	if r.Method == "POST"{
+
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+}
+
+func processRetrieve(w http.ResponseWriter, r *http.Request){
+	if r.Method == "POST"{
+
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+}
+
+func processGet(w http.ResponseWriter, r *http.Request){
+	if r.Method == "GET"{
+
+	}else{
+		w.WriteHeader(http.StatusUnauthorized) 
+	}
 }
 
 
@@ -22,10 +50,10 @@ func process(w http.ResponseWriter, r *http.Request){
 func main(){
 
 	fmt.Printf("Starting server...")
-	http.HandleFunc("/add", process)
-	http.HandleFunc("/get", process)
-	http.HandleFunc("/modify", process)
-	http.HandleFunc("/retrieve", process)
+	http.HandleFunc("/add", processAdd)
+	http.HandleFunc("/get", processGet)
+	http.HandleFunc("/modify", processModify)
+	http.HandleFunc("/retrieve", processRetrieve)
 	
 	s := &http.Server{
 		Addr			:	"localhost:9091",
