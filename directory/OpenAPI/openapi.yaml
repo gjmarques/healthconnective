@@ -1,0 +1,95 @@
+openapi: "3.0.0"
+
+info:
+  title: HealthConnective Directory Service
+  version: "1.0.0"
+  description: API to communicate with the orquestrator. This allows to retrieve a list of medical facilities relevant to the users query
+  contact:
+    email: gjmarques@ua.pt
+
+servers:
+  - url: http://localhost:8000/
+
+paths:
+  /medfac:
+    get:
+      summary: Returns medical facilities filtered by proximity to user and relevant tokens.
+      parameters:
+        - name: location
+          description: User current location.
+          in: query
+          required: true
+          schema:
+            items:
+              $ref: "#/components/schemas/Point"
+
+        - name: keywords
+          description: Revelant keywords to improve results (ex. farmacy, clinic, dentist, chiropractor...).
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description:  Successfully retrieved facilities.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MedFacility"
+        default:
+          description: Unexpected error
+
+components:
+  schemas:
+    MedFacility:
+      description: Medical Facility properties
+      properties:
+        name:
+          description: Medical Facility identifier
+          type: string
+
+        coords:
+          $ref: "#/components/schemas/Point"
+          description: Medical Facility geographical postition
+
+    Geometry:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#geometry-objects
+      properties:
+        type:
+          type: string
+          enum:
+          - Point
+          - LineString
+          - Polygon
+          - MultiPoint
+          - MultiLineString
+          - MultiPolygon
+          description: the geometry type
+          
+    Point3D:
+      type: array
+      description: Point in 3D space
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id2
+      minItems: 2
+      maxItems: 3
+      items:
+        type: number
+
+    Point:
+      type: object
+      description: GeoJSon geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id2
+      allOf:
+        - $ref: "#/components/schemas/Geometry"
+        - properties:
+            coordinates:
+              $ref: '#/components/schemas/Point3D'
