@@ -1,0 +1,86 @@
+openapi: "3.0.0"
+
+info:
+  title: HealthConnective VideoCall Service
+  version: "0.1.0"
+  description: VideoCall API for the remote chats between physicians and clients using WebRTC. Currently nothing is supported
+  contact:
+    email: jose.paiva@ua.pt
+
+servers:
+  - url: http://localhost:8008/
+
+paths:
+  /hdvcall:
+    post:
+      tags:
+        - videocall
+      summary: Add a new videocall
+      operationId: addPet
+      responses:
+        '405':
+          description: Invalid input
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref:  '#/components/schemas/ApiResponse'
+            
+  '/hdvcall/{id}':
+    get:
+      tags:
+        - videocall
+      summary: Request start of call
+      description: Start a video call
+      parameters:
+        - name: id
+          description: id of the videocall to request
+          required: true
+          in: path
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Call'
+        '404':
+          description: call not found
+
+components:
+  schemas:
+    Call:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        userMediaSound:
+          type: object
+          format: binary
+        userMediaVideo:
+          type: object
+          format: binary
+    Chat:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        userMediakeys:
+          type: string
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        type:
+          type: string
+        message:
+          type: string
+          format: json
