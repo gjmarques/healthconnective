@@ -1,12 +1,14 @@
 directory/app/__pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 directory/app/migrations/__pycache__/
 *.py[cod]
 *$py.class
-
+*.pyc
 
 directory/directory/__pycache__/
 *.py[cod]
 *$py.class
+*.pyc

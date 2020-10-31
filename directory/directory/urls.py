@@ -20,4 +20,5 @@ from app import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('add',views.addMed,name="addMed"),
+    path('get',views.getMed,name="getMed"),
 ]

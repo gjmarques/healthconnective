@@ -11,7 +11,7 @@ servers:
   - url: http://localhost:8000/
 
 paths:
-  /medfac:
+  /get:
     get:
       summary: Returns medical facilities filtered by proximity to user and relevant tokens.
       parameters:
@@ -23,7 +23,7 @@ paths:
             items:
               $ref: "#/components/schemas/Point"
 
-        - name: keywords
+        - name: tokens
           description: Revelant keywords to improve results (ex. farmacy, clinic, dentist, chiropractor...).
           in: query
           required: true
