@@ -1,0 +1,12 @@
+directory/app/__pycache__/
+*.py[cod]
+*$py.class
+
+directory/app/migrations/__pycache__/
+*.py[cod]
+*$py.class
+
+
+directory/directory/__pycache__/
+*.py[cod]
+*$py.class
