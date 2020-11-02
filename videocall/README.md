@@ -2,11 +2,10 @@
 
 #### Building the videocall service 
 
-In $REPO_DIR/videocall/ run:
+In `$REPO_DIR/videocall/` run:
 
 ```
 $ docker build -t videocall:latest .
-
 ```
 
 - This will build and containerize our videoconference call service.
@@ -24,9 +23,6 @@ $ docker run --name videocall -d -p 8008:8008 videocall
 And check for an output similar to this with the command
 ```
 $ docker ps
-```
-
-```
 CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
 5e2938573495        videocall           "docker-entrypoint.s…"   4 seconds ago       Up 4 seconds        0.0.0.0:8008->8008/tcp   videocall
 ```
@@ -46,4 +42,4 @@ $ docker container rm $(docker ps -aqf "name=videocall")
 
 #### Troubleshooting
 
-Not much works so open an issue I guess... ¯\\\_(ツ)_/¯
+Not much works so open an [issue](https://github.com/gjmarques/healthconnective/issues/new) I guess... ¯\\\_(ツ)_/¯
