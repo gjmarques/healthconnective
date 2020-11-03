@@ -20,17 +20,26 @@ paths:
           in: query
           required: true
           schema:
-            items:
-              $ref: "#/components/schemas/Point"
+            type: object
+            properties:
+              lat:
+                type: integer
+              lon:
+                type: integer
 
-        - name: tokens
-          description: Revelant keywords to improve results (ex. farmacy, clinic, dentist, chiropractor...).
+        - name: query
+          description: User query to be processed into tokens (ex. farmacy, clinic, dentist, chiropractor...).
           in: query
           required: true
           schema:
-            type: array
-            items:
-              type: string
+            type: string
+
+        - name: distance
+          description: Medical facilities will be within defined distance.
+          in: query
+          required: true
+          schema:
+            type: integer
       responses:
         200:
           description:  Successfully retrieved facilities.
