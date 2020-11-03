@@ -1,7 +1,7 @@
 package main
 
 import(
-	//"./calendar_support"
+	supp "./calendar_support"
 	"fmt"
 	//"strconv"
 	"net/http"
@@ -13,7 +13,7 @@ import(
 
 func processAdd(w http.ResponseWriter, r *http.Request){
 	if r.Method == "POST"{
-
+		supp.AddEntry(w,r)
 	}else{
 		w.WriteHeader(http.StatusUnauthorized)
 	}
