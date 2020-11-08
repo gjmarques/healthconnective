@@ -43,7 +43,25 @@ func processGet(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+func processTestAdd(w http.ResponseWriter, r *http.Request){
+	if r.Method == "POST"{
+		w.WriteHeader(http.StatusOK)
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+}
 
+
+func processTestRetrieve(w http.ResponseWriter, r *http.Request){
+	if r.Method == "GET"{
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"events": [{ date: 20160829T091233001Z , subject: "Consulta Maria" }, { date: 20160829T091333001Z, subject: "Consulta Mário"}, { date: 20160829T0101233001Z, subject : "Consulta João"}]}`))
+
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}	
+}
 
 
 
@@ -54,6 +72,8 @@ func main(){
 	http.HandleFunc("/get", processGet)
 	http.HandleFunc("/modify", processModify)
 	http.HandleFunc("/retrieve", processRetrieve)
+	http.HandleFunc("/testadd", processTestAdd)
+	http.HandleFunc("/testretrieve", processTestRetrieve)
 	
 	s := &http.Server{
 		Addr			:	"localhost:9091",

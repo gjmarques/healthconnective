@@ -12,16 +12,33 @@ import(
 
 )
 const (  
-    db_address = "engenhariaServicos2020:calendario@tcp(localhost:9092)/calendario_users"
+    db_address = "root:es2020@tcp(localhost:9094)/CalendarUsers"
 )
 
-var IsLetter = regexp.MustCompile(`^[0-9]+$`).MatchString
+var IsLetter = regexp.MustCompile("[a-z@._0-9]+$").MatchString
 
-func isUserinDatabase(uuid string, db_Pointer *sql.DB) bool{
-    sqlStatement := "SELECT * FROM users WHERE uuid = ?;"
+func AddUser(email string, PersonName string, db_Pointer *sql.DB) bool{
+    insert, err := db_Pointer.Prepare("INSERT INTO users(email, PersonName) VALUES (?, ?)")
+    if err != nil {
+        return false
+    }
+    
+    //execute
+    res, err := insert.Exec( email, PersonName)
+    if err != nil {
+        return false
+    }
 
 
-    result_row :=db_Pointer.QueryRow(sqlStatement, uuid)
+    return true
+}
+}
+
+func isUserinDatabase(email string, db_Pointer *sql.DB) bool{
+    sqlStatement := "SELECT * FROM users WHERE email = ?;"
+
+
+    result_row :=db_Pointer.QueryRow(sqlStatement, email)
     
     err := result_row.Scan()
     if err != nil {
@@ -41,20 +58,39 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
     if err != nil {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusOK)
-   		w.Write([]byte(`{"error": "Could not access database"}`))
+        w.Write([]byte(`{"error": "Could not access database"}`))
+        return
     }else{
         err := r.ParseForm()
         if err != nil {
             w.Header().Set("Content-Type", "application/json")
             w.WriteHeader(http.StatusOK)
             w.Write([]byte(`{"error": "Could not access database"}`))
+            CloseConnectionDB(db_Pointer)
+            return 
         }
-        uuid := r.PostForm.Get("uuid")
-        user_avail := isUserinDatabase(uuid, db_Pointer)
+        email := r.PostForm.Get("email")
+        if email == ""{
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusOK)
+            w.Write([]byte(`{"error": "Wrong request params"}`))
+            CloseConnectionDB(db_Pointer)
+            return
+        }
+        user_avail := isUserinDatabase(email, db_Pointer)
         if user_avail{
             //add entry to calendar
         }else{
             //create user first
+            added := AddUser(email, r.PostForm.Get("NameUser"), db_Pointer)
+            
+            CloseConnectionDB(db_Pointer)
+            if !added{
+                w.Header().Set("Content-Type", "application/json")
+                w.WriteHeader(http.StatusOK)
+                w.Write([]byte(`{"error": "Could not access database"}`))  
+                return 
+            }   
         }
 
     }
