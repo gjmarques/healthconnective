@@ -15,9 +15,25 @@ const (
     db_address = "root:es2020@tcp(localhost:9094)/CalendarUsers"
 )
 
-var IsLetter = regexp.MustCompile("[a-z@._0-9]+$").MatchString
+var re, regexerr = regexp.Compile("[^A-Za-z@._0-9 ]+")    
+
+func IsQueryTermOK(term string) bool{
+    if regexerr != nil{
+        return false
+    }else{
+        var isOK = re.MatchString(term)
+        
+        if isOK{
+            return true
+        }else{
+            return false
+        }
+    }
+
+}
 
 func AddUser(email string, PersonName string, db_Pointer *sql.DB) bool{
+    
     insert, err := db_Pointer.Prepare("INSERT INTO users(email, PersonName) VALUES (?, ?)")
     if err != nil {
         return false
@@ -76,13 +92,33 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
             w.Write([]byte(`{"error": "Wrong request params"}`))
             CloseConnectionDB(db_Pointer)
             return
+        }else{
+            if !IsQueryTermOK(email){
+                w.Header().Set("Content-Type", "application/json")
+                w.WriteHeader(http.StatusOK)
+                w.Write([]byte(`{"error": "Wrong request params"}`))
+                CloseConnectionDB(db_Pointer)
+                return
+            }
         }
         user_avail := isUserinDatabase(email, db_Pointer)
         if user_avail{
             //add entry to calendar
+            req, err := http.NewRequest("","application/xml", bytes.NewBuffer(reqBody))
+            req.Header.Set("ChannelName", "user")
+            req.Header.Set("ChannelPassword", "password") 
         }else{
+            //get Users name
+            name_user := r.PostForm.Get("NameUser")
+            if !IsQueryTermOK(name_user){
+                w.Header().Set("Content-Type", "application/json")
+                w.WriteHeader(http.StatusOK)
+                w.Write([]byte(`{"error": "Wrong request params"}`))
+                CloseConnectionDB(db_Pointer)
+                return
+            }
             //create user first
-            added := AddUser(email, r.PostForm.Get("NameUser"), db_Pointer)
+            added := AddUser(email, , db_Pointer)
             
             CloseConnectionDB(db_Pointer)
             if !added{
