@@ -9,6 +9,8 @@ import(
     "errors"
     "regexp"
 	"net/http"
+    "bytes"
+    build "../build_req"
 
 )
 const (  
@@ -41,6 +43,7 @@ func AddUser(email string, PersonName string, db_Pointer *sql.DB) bool{
     
     //execute
     res, err := insert.Exec( email, PersonName)
+    _ = res
     if err != nil {
         return false
     }
@@ -48,7 +51,7 @@ func AddUser(email string, PersonName string, db_Pointer *sql.DB) bool{
 
     return true
 }
-}
+
 
 func isUserinDatabase(email string, db_Pointer *sql.DB) bool{
     sqlStatement := "SELECT * FROM users WHERE email = ?;"
@@ -104,7 +107,12 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
         user_avail := isUserinDatabase(email, db_Pointer)
         if user_avail{
             //add entry to calendar
-            req, err := http.NewRequest("","application/xml", bytes.NewBuffer(reqBody))
+            
+            req, err := http.NewRequest("","application/xml", bytes.NewBuffer([]byte(build.Build_MKCALENDAR(email))))
+            if err != nil{
+                
+                
+            }
             req.Header.Set("ChannelName", "user")
             req.Header.Set("ChannelPassword", "password") 
         }else{
@@ -118,7 +126,7 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
                 return
             }
             //create user first
-            added := AddUser(email, , db_Pointer)
+            added := AddUser(email, "ok", db_Pointer)
             
             CloseConnectionDB(db_Pointer)
             if !added{

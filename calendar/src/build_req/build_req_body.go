@@ -1,13 +1,16 @@
 package buildBody
 
 import(
-	"math/rand"
 	"time"
+    "strings"
+    "fmt"
+    "math/big"
+    "crypto/rand"
 )
 
 //content type application/xml
 //charset=utf-8
-mkcalendar_content := `<?xml version="1.0" encoding="utf-8" ?>
+var mkcalendar_content = `<?xml version="1.0" encoding="utf-8" ?>
 <C:mkcalendar xmlns:D="DAV:"
 			  xmlns:C="urn:ietf:params:xml:ns:caldav">
   <D:set>
@@ -50,7 +53,7 @@ END:VCALENDAR
 //charset=utf-8
 
 //returns 201 code and etag
-put_content := `
+var put_content = `
 BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//ES2020//CalDAV Client//EN
@@ -64,7 +67,7 @@ END:VEVENT
 END:VCALENDAR
 `
 
-report_content := `
+var report_content = `
 <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
     <d:prop>
         <d:getetag />
@@ -78,19 +81,19 @@ report_content := `
 </c:calendar-query>`
 
 
-func build_PROPFIND(){}
+//func Build_PROPFIND(){}
 
 
 
-func build_REPORT(){
+func Build_REPORT() string{
 	return report_content
 }
 
-func build_PUT(date string, summary string){
+func Build_PUT(date string, summary string) string{
 
 	uuid := generate_uuid()
 	time_n := time.Now()
-	d_stamp = time_n.Format(time.RFC3339)
+	d_stamp := time_n.Format(time.RFC3339)
     d_stamp = strings.Replace(d_stamp, "-", "", -1)
     d_stamp = strings.Replace(d_stamp, ":", "", -1)
 	
@@ -113,20 +116,22 @@ func build_PUT(date string, summary string){
 	return fmt.Sprintf(put_content, uuid, d_stamp,date_start, date_end, summary)
 
 }
-func build_MKCALENDAR(email string){
+func Build_MKCALENDAR(email string) string{
 	time_now := time.Now().Format(time.RFC3339)
     formatted_time := strings.Replace(time_now, "-", "", -1)
-    formatted_time = strings.Replace(new_date, ":", "", -1)
+    formatted_time = strings.Replace(formatted_time, ":", "", -1)
 	return fmt.Sprintf(mkcalendar_content, email, formatted_time)
 }
 
 
 
-func generate_uuid(){
-	charset = "abcdefghijklmnopqrstuvwxyz0123456789"
-	b := make([]byte, 20)
+func generate_uuid() string{
+	charset := "abcdefghijklmnopqrstuvwxyz0123456789"
+	b := make([]byte, 32)
 	for i := range b {
-		b[i] = charset[seededRand.Intn(len(charset))]
+        numb, err := rand.Int(rand.Reader, big.NewInt(32))
+        _ = err
+		b[i] = charset[numb.Int64()]
 	}
 	return string(b)
 }
