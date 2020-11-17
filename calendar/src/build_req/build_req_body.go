@@ -1,6 +1,6 @@
 package buildBody
 
-import(
+import (
 	"time"
     "strings"
     "fmt"
@@ -10,44 +10,22 @@ import(
 
 //content type application/xml
 //charset=utf-8
-var mkcalendar_content = `<?xml version="1.0" encoding="utf-8" ?>
-<C:mkcalendar xmlns:D="DAV:"
-			  xmlns:C="urn:ietf:params:xml:ns:caldav">
-  <D:set>
-	<D:prop>
-	  <D:displayname> %s Events</D:displayname>
-	  <C:calendar-description xml:lang="en"
->Calendar restricted to events.</C:calendar-description>
-	  <C:supported-calendar-component-set>
-		<C:comp name="VEVENT"/>
-	  </C:supported-calendar-component-set>
-	  <C:calendar-timezone><![CDATA[BEGIN:VCALENDAR
-PRODID:-//ES2020//CalDAV Client//EN
-VERSION:2.0
-BEGIN:VTIMEZONE
-TZID:WET
-LAST-MODIFIED:%s
-BEGIN:STANDARD
-DTSTART:19671029T020000
-RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10
-TZOFFSETFROM:-0400
-TZOFFSETTO:-0500
-TZNAME:Western European Time
-END:STANDARD
-BEGIN:DAYLIGHT
-DTSTART:19870405T020000
-RRULE:FREQ=YEARLY;BYDAY=1SU;BYMONTH=4
-TZOFFSETFROM:-0500
-TZOFFSETTO:-0400
-TZNAME:Western Daylight Time
-END:DAYLIGHT
-END:VTIMEZONE
-END:VCALENDAR
-]]></C:calendar-timezone>
-	</D:prop>
-  </D:set>
-</C:mkcalendar>`
-
+var mkcalendar_content = `<create xmlns="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav" xmlns:I="http://apple.com/ns/ical/">
+<set>
+  <prop>
+	<resourcetype>
+	  <collection />
+	  <C:calendar />
+	</resourcetype>
+	<C:supported-calendar-component-set>
+	  <C:comp name="VEVENT" />
+	</C:supported-calendar-component-set>
+	<displayname>Calendar</displayname>
+	<C:calendar-description>calendar</C:calendar-description>
+	<I:calendar-color>#ff0000ff</I:calendar-color>
+  </prop>
+</set>
+</create>`
 
 // content type text/calendar
 //charset=utf-8
@@ -89,7 +67,7 @@ func Build_REPORT() string{
 	return report_content
 }
 
-func Build_PUT(date string, summary string) string{
+func Build_PUT(date string, summary string) (string, string){
 
 	uuid := generate_uuid()
 	time_n := time.Now()
@@ -113,14 +91,11 @@ func Build_PUT(date string, summary string) string{
 	date_end = strings.Replace(date_end, "-", "", -1)
 	date_end = strings.Replace(date_end, ":", "", -1)
 
-	return fmt.Sprintf(put_content, uuid, d_stamp,date_start, date_end, summary)
+	return uuid, fmt.Sprintf(put_content, uuid, d_stamp,date_start, date_end, summary)
 
 }
-func Build_MKCALENDAR(email string) string{
-	time_now := time.Now().Format(time.RFC3339)
-    formatted_time := strings.Replace(time_now, "-", "", -1)
-    formatted_time = strings.Replace(formatted_time, ":", "", -1)
-	return fmt.Sprintf(mkcalendar_content, email, formatted_time)
+func Build_MKCALENDAR() string{
+	return mkcalendar_content
 }
 
 

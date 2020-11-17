@@ -2,7 +2,7 @@ package AuxMethods
 
 
 
-import(
+import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
     "time"
@@ -10,7 +10,7 @@ import(
     "regexp"
 	"net/http"
     "bytes"
-    build "../build_req"
+    req "../calendar_requests"
 
 )
 const (  
@@ -52,23 +52,34 @@ func AddUser(email string, PersonName string, db_Pointer *sql.DB) bool{
     return true
 }
 
+func getEtag(email string, date string) (string, string, string){
+    sqlStatement := "SELECT U.id_user, UC.ics, UC.etag FROM Users AS U JOIN Users_cal AS UC WHERE U.email = ? AND UC.date_start= ?;"
+
+
+    result_row :=db_Pointer.QueryRow(sqlStatement, email, date)
+    var id
+    var ics
+    var etag 
+    err := result_row.Scan(&id, &ics, &etag)
+    if err != nil {
+        return -1
+    }
+
+    return id, ics, etag
+}
 
 func isUserinDatabase(email string, db_Pointer *sql.DB) bool{
-    sqlStatement := "SELECT * FROM users WHERE email = ?;"
+    sqlStatement := "SELECT id_user FROM users WHERE email = ?;"
 
 
     result_row :=db_Pointer.QueryRow(sqlStatement, email)
-    
-    err := result_row.Scan()
+    var id 
+    err := result_row.Scan(&id)
     if err != nil {
-        if err == sql.ErrNoRows {
-            return false
-        } else {
-            return false
-        }
+        return -1
     }
 
-    return true
+    return id
 }
 
 func AddEntry(w http.ResponseWriter, r *http.Request){
@@ -104,17 +115,16 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
                 return
             }
         }
-        user_avail := isUserinDatabase(email, db_Pointer)
-        if user_avail{
+        id_user_avail := isUserinDatabase(email, db_Pointer)
+        if id_user_avail != -1 {
             //add entry to calendar
-            
-            req, err := http.NewRequest("","application/xml", bytes.NewBuffer([]byte(build.Build_MKCALENDAR(email))))
+            summary := r.PostForm.Get("summary")
+            date := r.PostForm.Get("date")
+            uuid, put_body = build.Build_PUT(date, summary)
             if err != nil{
                 
                 
             }
-            req.Header.Set("ChannelName", "user")
-            req.Header.Set("ChannelPassword", "password") 
         }else{
             //get Users name
             name_user := r.PostForm.Get("NameUser")
@@ -126,7 +136,7 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
                 return
             }
             //create user first
-            added := AddUser(email, "ok", db_Pointer)
+            added := AddUser(email, name_user, db_Pointer)
             
             CloseConnectionDB(db_Pointer)
             if !added{
@@ -155,18 +165,95 @@ func ModifyEntry(w http.ResponseWriter, r *http.Request){
             w.WriteHeader(http.StatusOK)
             w.Write([]byte(`{"error": "Could not access database"}`))
         }
-        uuid := r.PostForm.Get("uuid")
-        user_avail := isUserinDatabase(uuid, db_Pointer)
-        if user_avail{
-            //modify entry in calendar
-        }else{
+        email := r.PostForm.Get("email")
+        if email == ""{
             w.Header().Set("Content-Type", "application/json")
             w.WriteHeader(http.StatusOK)
-            w.Write([]byte(`{"error": "User not present in the database"}`))
+            w.Write([]byte(`{"error": "Wrong request params"}`))
+            CloseConnectionDB(db_Pointer)
+            return
+        }else{
+            if !IsQueryTermOK(email){
+                w.Header().Set("Content-Type", "application/json")
+                w.WriteHeader(http.StatusOK)
+                w.Write([]byte(`{"error": "Wrong request params"}`))
+                CloseConnectionDB(db_Pointer)
+                return
+            }
         }
 
     }
 }
+
+
+func DeleteEntry(w http.ResponseWriter, r *http.Request){
+    db_Pointer, err := OpenConnectionDB()
+
+    if err != nil {
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(http.StatusOK)
+   		w.Write([]byte(`{"error": "Could not access database"}`))
+    }else{
+        err := r.ParseForm()
+        if err != nil {
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusOK)
+            w.Write([]byte(`{"error": "Could not access database"}`))
+        }
+        email := r.PostForm.Get("email")
+        if email == ""{
+            w.Header().Set("Content-Type", "application/json")
+            w.WriteHeader(http.StatusOK)
+            w.Write([]byte(`{"error": "Wrong request params"}`))
+            CloseConnectionDB(db_Pointer)
+            return
+        }else{
+            if !IsQueryTermOK(email){
+                w.Header().Set("Content-Type", "application/json")
+                w.WriteHeader(http.StatusOK)
+                w.Write([]byte(`{"error": "Wrong request params"}`))
+                CloseConnectionDB(db_Pointer)
+                return
+            }
+        }
+        id_user_avail := isUserinDatabase(email, db_Pointer)
+        if id_user_avail != -1 {
+            //add entry to calendar
+            
+            if err != nil{
+                
+                
+            }
+        }else{
+            //get date to delete
+            date := r.PostForm.Get("date")
+            if date == ""{
+                w.Header().Set("Content-Type", "application/json")
+                w.WriteHeader(http.StatusOK)
+                w.Write([]byte(`{"error": "Wrong request params"}`))
+                CloseConnectionDB(db_Pointer)
+                return
+            }
+
+            ndate,err := time.Parse(time.RFC3339,date)
+
+            if err != nil{
+
+
+            }
+            
+            date_event := ndate.Format(time.RFC3339)
+	        date_event = strings.Replace(date_event, "-", "", -1)
+	        date_event = strings.Replace(date_event, ":", "", -1)
+	
+            id, ics, etag := getEtag(email, date_event)
+
+            cod, err := req.Delete_from_cal(id, ics, etag)
+            
+            
+        }
+}
+
 
 func OpenConnectionDB() (*sql.DB, error) {
     db, err := sql.Open("mysql", db_address)

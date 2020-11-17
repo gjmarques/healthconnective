@@ -1,15 +1,16 @@
 CREATE TABLE Users(
+    id_user int NOT NULL AUTO_INCREMENT,
     email varchar(60),
     PersonName varchar (60) NOT NULL,
-    PRIMARY KEY (email)
+    PRIMARY KEY (id_user)
 );
 
 
 CREATE TABLE Users_cal(
-    email varchar(60),
+    id_user int,
     ics varchar(30) ,
     date_start char(16),
     etag varchar(10),
-    PRIMARY KEY (email, ics),
-    FOREIGN KEY (email) REFERENCES Users(email)
+    PRIMARY KEY (id_user, ics),
+    FOREIGN KEY (id_user) REFERENCES Users(id_user)
 );
