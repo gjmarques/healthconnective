@@ -8,9 +8,9 @@ CREATE TABLE Users(
 
 CREATE TABLE Users_cal(
     id_user int,
-    ics varchar(30) ,
+    ics varchar(32) ,
     date_start char(16),
-    etag varchar(10),
+    etag varchar(32),
     PRIMARY KEY (id_user, ics),
     FOREIGN KEY (id_user) REFERENCES Users(id_user)
 );
