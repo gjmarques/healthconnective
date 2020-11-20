@@ -67,9 +67,14 @@ func Build_REPORT() string{
 	return report_content
 }
 
-func Build_PUT(date string, summary string) (string, string){
+func Build_PUT(date string, summary string, ics string) (string, string){
+	if strings.EqualFold(ics, ""){
+		uuid := generate_uuid()
+	}else{
+		uuid := ics
+	}
 
-	uuid := generate_uuid()
+
 	time_n := time.Now()
 	d_stamp := time_n.Format(time.RFC3339)
     d_stamp = strings.Replace(d_stamp, "-", "", -1)

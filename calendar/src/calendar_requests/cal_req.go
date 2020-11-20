@@ -9,12 +9,43 @@ import (
 	//"strconv"
 	"errors"
 	"encoding/base64"
+    "container/list"
 	build "../build_req"
 )
 
 const (
 	calendar_address = "http://192.168.1.97:5232/"
 )
+
+
+type Multistatus struct {
+    XMLName  xml.Name `xml:"multistatus"`
+    Responses []Response `xml:"response"`
+} 
+
+type Response struct {
+    Href     string `xml:"href"`
+    PropS []PropStat `xml:"propstat"`
+} 
+
+type PropStat struct {
+    PropE []Prop `xml:"prop"`
+    Status string `xml:"status"`
+}
+
+type Prop struct {
+    Getetag string `xml:"getetag"`
+    CalendarData string `xml:"calendar-data"`
+} 
+
+type Events struct {
+	Events []Event
+}
+type Event struct {
+	Summary string
+	Date string
+}
+
 
 func Mk_cal(id_user_avail string) bool{
 
@@ -51,9 +82,16 @@ func Mk_cal(id_user_avail string) bool{
 	return true
 }
 
-func Put_cal(id_user_avail string, date string, summary string) (string, string, error){
 
-	uuid, reqBody := build.Build_PUT(date, summary)
+
+func Put_new_cal(id_user_avail string, date string, summary string), ics string (string, string, error){
+
+	if strings.EqualFold(ics,""){
+		uuid, reqBody := build.Build_PUT(date, summary, "")
+	}else{
+		uuid, reqBody := build.Build_PUT(date, summary, ics)
+
+	}
 	
 	client := &http.Client {
         Transport: &http.Transport{
@@ -83,10 +121,13 @@ func Put_cal(id_user_avail string, date string, summary string) (string, string,
         fmt.Println(err)
         return "", "", errors.New("")
 	}
-	
-	_ = res
+	if res.StatusCode == 201{
+		etag := strings.Trim(res.Header["Etag"][0], "\"")
+	}else{
+		return "", "", errors.New("")	
+	}
 
-	return uuid, "", nil
+	return uuid, etag, nil
 }
 
 func Propfind_cal(){
@@ -94,7 +135,7 @@ func Propfind_cal(){
     
 }
 
-func Report_cal(id_user_avail string, ics string) (string, error){
+func Report_cal(id_user_avail string) (string, error){
 
 	client := &http.Client {
         Transport: &http.Transport{
@@ -108,36 +149,49 @@ func Report_cal(id_user_avail string, ics string) (string, error){
 	
 	
 
-	if ics != ""{
-		req, err1 := http.NewRequest("REPORT",calendar_address + id_user_avail + "/calendar/" + ics + ".ics", &buf)
-		_ = err1
-		req.Header.Add("Authorization", "Basic " + encodedStr)
-		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		res, err := client.Do(req)
-		if err != nil {
-			fmt.Println(err)
-			return "", errors.New("")
-		}
 
-		_ = res
-	
-	}else{
-		req, err1 := http.NewRequest("REPORT",calendar_address + id_user_avail + "/calendar", &buf)
-		_ = err1
-		req.Header.Add("Authorization", "Basic " + encodedStr)
-		req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-		res, err := client.Do(req)
-		if err != nil {
-			fmt.Println(err)
-			return "", errors.New("")
-		}
-    
-
-		
-		_ = res	
+	req, err1 := http.NewRequest("REPORT",calendar_address + id_user_avail + "/calendar", &buf)
+	_ = err1
+	req.Header.Add("Authorization", "Basic " + encodedStr)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return "", errors.New("")
 	}
 
-	return "", nil
+
+	var xml_data Multistatus
+
+    body, _ = ioutil.ReadAll(res.Body)
+    if err != nil {
+        fmt.Println(err)
+        return
+    }
+    //fmt.Println(string(body))
+    
+	var ev Events
+    if err := xml.Unmarshal([]byte(body), &xml_data); err != nil {}
+	
+	for _, r := range xml_data.Responses {
+		calData := strings.Split(r.PropS[0].PropE[0].CalendarData, "\n")
+
+
+		date := strings.Split(calData[6],":")[1]
+		summary := strings.Split(calData[8],":")[1]
+		
+		append(ev.Events, Event{summary, date})
+		
+	}   
+	
+	json_res, err := json.Marshal(ev) 
+
+	if err != nil {
+		return "", errors.New("")
+
+	}
+
+	return json_res, nil
 
 	
 	
@@ -145,7 +199,7 @@ func Report_cal(id_user_avail string, ics string) (string, error){
 }
 
 
-func Delete_from_cal(id_user_avail string, etag string, ics string) (string, error){
+func Delete_from_cal(id_user_avail string, etag string, ics string) bool{
 	client := &http.Client {
         Transport: &http.Transport{
             DisableCompression: true,
@@ -154,18 +208,20 @@ func Delete_from_cal(id_user_avail string, etag string, ics string) (string, err
 	
 	req, err := http.NewRequest("DELETE",calendar_address + id_user_avail + "/calendar/" + ics + ".ics", nil)
 	if err != nil{
-
+		return false
 	}
 	req.Header.Add("If-Match", etag)
 	resp, err := client.Do(req)
 	
 	if err != nil {
         fmt.Println(err)
-        return "", errors.New("1")
+        return false
 	}
 	
-	_ = resp
+	if resp.StatusCode != 200{
+		return false
+	}
 
-	return "", nil
+	return true
     
 }
