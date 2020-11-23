@@ -21,9 +21,10 @@ def addMed(request):
         try:
             data = json.loads(request.body)
             name = data.get('name')
+            address = data.get('address')
             coords = data.get('coords')
             tokens = data.get('tokens')
-            medfac = MedFacility.objects.create(name=name, coords=coords, tokens=tokens)
+            medfac = MedFacility.objects.create(name=name, address=address, coords=coords, tokens=tokens)
             medfac.save()
 
             return HttpResponse("Medical Facility added",status=status.HTTP_200_OK)
@@ -49,6 +50,8 @@ def getMed(request):
                 for s in qs:
                     mf_data = MedFacilitySerializer(s).data
                     dic = { 'name' : mf_data.get('properties').get('name'),
+                            'address': mf_data.get('properties').get('address'),
+                            'tokens': mf_data.get('properties').get('tokens'),
                             'location' : {"lat" : mf_data.get('geometry').get('coordinates')[0],
                                                "lon" : mf_data.get('geometry').get('coordinates')[1] }}
                     if dic not in response:
@@ -67,28 +70,28 @@ def stubMed(request):
     if request.method == "GET":
         try:
             response = []
-            query_str = ''
-            request = json.loads(request.body)
-            query_str = request.get('query')
-            tkn = query_str.split()
-            dist = request.get('distance')
-            lat = request.get('location').get('lat')
-            lon = request.get('location').get('lon')
+
 
             response.append({
-                'name' : 'Farmácia Lucas',
-                'location' : { "lat" : 40.6,
-                                 "lon" : -8.6 }
+                'name' : 'Farmácia Moura',
+                'address' : 'Rua Manuel Firmino 36, 3800-202 Aveiro',
+                'tokens':['pharmacy'],
+                'location' : { "lat" : 40.64289345232521,
+                                 "lon" : -8.652008851357623 }
             })
             response.append({
-                'name' : 'Clínica Lopes',
-                'location' : { "lat" : 40.7,
-                                 "lon" : -8.7 }
+                'name' : 'Clínica Dr. Mário Jorge Silva, Lda',
+                'address' : 'R. do Sr. dos Aflitos 10, 3800-165 Aveiro',
+                'tokens': ['clinic', 'fisiotherapist'],
+                'location' : { "lat" : 40.642864794000886,
+                                 "lon" : -8.643812020876616 }
             })
             response.append({
-                'name' : 'Ortopedista Esticadinho',
-                'location' : { "lat" : 60.6,
-                                 "lon" : -60.6 }
+                'name' : 'Clínica de Medicina Dentária Doutor José L Moinheiro Lda',
+                'address' : 'R. Dr. Alberto Souto 3 1º, 3800-149 Aveiro',
+                'tokens': ['clinic', 'dentist'],
+                'location' : { "lat" : 40.64441137637814,
+                                 "lon" : -8.64711650266061 }
             })
 
             return JsonResponse(response, safe=False, status=status.HTTP_200_OK)

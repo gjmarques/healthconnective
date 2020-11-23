@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'rest_framework_gis',
+    'corsheaders',
     'app',
 ]
 
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'directory.urls'
@@ -72,6 +74,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'directory.wsgi.application'
 
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000"
+]
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases

@@ -4,7 +4,7 @@ volumes:
   postgis-data:
 
 services:
-  directory_db:
+  db:
     image: kartoza/postgis:12.0
     volumes:
       - postgis-data:/var/lib/postgresql
@@ -22,7 +22,7 @@ services:
     healthcheck:
       test: "exit 0"
 
-  directory_web:
+  web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
@@ -30,5 +30,5 @@ services:
     ports:
       - "8000:8000"
     depends_on:
-      - directory_db
+      - db
 

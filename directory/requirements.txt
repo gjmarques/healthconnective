@@ -1,2 +1,4 @@
 Django==3.1.2
+djangorestframework-gis
 psycopg2-binary>=2.8
+django-cors-headers
