@@ -10,8 +10,9 @@ import (
     "errors"
     "regexp"
     "net/http"
-    //"strconv"
+    "strconv"
     "strings"
+    //"fmt"
     //"bytes"
     req "../calendar_requests"
 
@@ -56,6 +57,80 @@ func parseJWT_Token(token_jwt string) (string, string, error){
 }
 
 
+func TestGet(w http.ResponseWriter, r *http.Request){
+    
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+
+    return_string := `{ "Events: [ `
+
+    date_test := time.Now()
+    for i:=0; i<4; i++ {               
+        
+        time_now := date_test.Format(time.RFC3339)
+        
+        
+        new_date := strings.Replace(time_now, "-", "", -1)
+        new_date = strings.Replace(new_date, ":", "", -1)
+        
+        return_string = return_string + ` {Summary : "Consulta Maria` + strconv.Itoa(i) + `", Date: "` + new_date + `"}`   
+        
+        if i != 3{
+            return_string = return_string + ","
+        }
+        date_test = date_test.Add(time.Minute * 60)
+    }        
+
+    return_string = return_string + `]}`
+
+
+
+    w.Write([]byte(return_string))
+}
+
+func TestJwt(w http.ResponseWriter, r *http.Request){    
+    err := r.ParseForm()
+    
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
+    tokenString := r.PostForm.Get("token")
+    
+    
+        
+        
+    token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+    // Don't forget to validate the alg is what you expect:
+    if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+        return nil, errors.New("Unexpected signing method")
+    }
+
+    //return []byte("secret-key"), error
+    return []byte("calendar") , nil
+    })
+
+    if err != nil{
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+
+    }
+    if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+        name :=  claims["name"].(string)
+        email :=  claims["email"].(string)
+        
+        w.WriteHeader(http.StatusOK)
+        w.Header().Set("Content-Type", "application/json")
+        w.Write([]byte(`{"Name" : "` + name + `" , "Email" : "` + email + `"}`))
+        return
+        
+    }else{
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+        
+        
+    }
+}
 
 func IsQueryTermOK(term string) bool{
     if regexerr != nil{

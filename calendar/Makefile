@@ -3,7 +3,7 @@
 
 start_service:
 	docker-compose up -d
-	python3 -m radicale --storage-filesystem-folder=~/.var/lib/radicale/collections --server-hosts 0.0.0.0:9095
+	#python3 -m radicale --storage-filesystem-folder=~/.var/lib/radicale/collections --server-hosts 0.0.0.0:9095
 
 
 build_calendar_service:
