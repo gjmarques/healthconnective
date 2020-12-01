@@ -52,7 +52,6 @@ func processTestAdd(w http.ResponseWriter, r *http.Request){
 
 func processTestJwt(w http.ResponseWriter, r *http.Request){
     if r.Method == "POST"{
-        fmt.Println("testjwt")
         supp.TestJwt(w,r)
         
         
@@ -82,6 +81,19 @@ func processTestDelete(w http.ResponseWriter, r *http.Request){
 	}	
 }
 
+func processAvailable(w http.ResponseWriter, r *http.Request){
+	if r.Method == "POST"{
+        supp.IsAvailable(w,r)
+        
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}	
+}
+
+
+
+
+
 
 
 func main(){
@@ -91,6 +103,7 @@ func main(){
 	http.HandleFunc("/get", processGet)
 	http.HandleFunc("/modify", processModify)
 	http.HandleFunc("/delete", processDelete)
+    http.HandleFunc("/available", processAvailable)
 	http.HandleFunc("/testadd", processTestAdd)
 	http.HandleFunc("/testget", processTestGet)
 	http.HandleFunc("/testdelete", processTestDelete)
