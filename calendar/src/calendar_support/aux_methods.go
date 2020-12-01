@@ -4,7 +4,8 @@ package AuxMethods
 
 import (
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+    _ "github.com/go-sql-driver/mysql"
+    "github.com/dgrijalva/jwt-go"
     "time"
     "errors"
     "regexp"
@@ -20,6 +21,41 @@ const (
 )
 
 var re, regexerr = regexp.Compile("[^A-Za-z@._0-9 ]+")    
+
+
+func parseJWT_Token(token_jwt string) (string, string, error){
+     tokenString := token_jwt
+
+    // Parse takes the token string and a function for looking up the key. The latter is especially
+    // useful if you use multiple keys for your application.  The standard is to use 'kid' in the
+    // head of the token to identify which key to use, but the parsed token (head and claims) is provided
+    // to the callback, providing flexibility.
+    token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+        // Don't forget to validate the alg is what you expect:
+        if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+            return nil, errors.New("Unexpected signing method")
+        }
+
+        //return []byte("secret-key"), error
+        return []byte("calendar") , nil
+    })
+
+    if err != nil{
+        return "", "", errors.New("1")
+
+    }
+    if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+        name :=  claims["name"].(string)
+        email :=  claims["email"].(string)
+        
+
+        return name, email, nil
+    } else {
+        return "", "", errors.New("1")
+    }
+}
+
+
 
 func IsQueryTermOK(term string) bool{
     if regexerr != nil{
@@ -119,8 +155,11 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
             CloseConnectionDB(db_Pointer)
             return 
         }
-        email := r.PostForm.Get("email")
-        if email == ""{
+
+        email, name_user, jwt_err :=  parseJWT_Token(r.PostForm.Get("token"))
+
+
+        if strings.EqualFold(email, "") || jwt_err != nil{
             w.WriteHeader(http.StatusBadRequest)
             CloseConnectionDB(db_Pointer)
             return
@@ -135,10 +174,8 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
         summary := r.PostForm.Get("summary")
         date := r.PostForm.Get("date")
 
-        if id_user_avail == "-1" {
+        if strings.EqualFold(id_user_avail,"-1") {
             
-            //get Users name
-            name_user := r.PostForm.Get("NameUser")
             if !IsQueryTermOK(name_user){
                 w.WriteHeader(http.StatusBadRequest)
                 CloseConnectionDB(db_Pointer)
@@ -156,7 +193,7 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
 
             id_user_avail := isUserinDatabase(email, db_Pointer)
             
-            if id_user_avail == "-1"{
+            if strings.EqualFold(id_user_avail, "-1"){
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusInternalServerError)
                 return
@@ -165,18 +202,15 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
 
         
         //add entry to calendar  
-        ics, putErr := req.Put_cal(id_user_avail, date, summary)
-        if putErr == ""{
+        uuid, etag, err := req.Put_new_cal(id_user_avail, date, summary, "")
+        if err != nil{
             
             
         }
 
 
-        //get etag
-        etag, err := req.Report_cal(id_user_avail, ics)
 
-
-        addedEv := AddEvent(id_user_avail, etag, date, ics, db_Pointer)
+        addedEv := AddEvent(id_user_avail, etag, date, uuid, db_Pointer)
 
         CloseConnectionDB(db_Pointer)
         
@@ -203,8 +237,11 @@ func ModifyEntry(w http.ResponseWriter, r *http.Request){
         if err != nil {
             w.WriteHeader(http.StatusBadRequest)
         }
-        email := r.PostForm.Get("email")
-        if email == ""{
+        email, name_user, jwt_err :=  parseJWT_Token(r.PostForm.Get("token"))
+        
+        _ = name_user
+
+        if strings.EqualFold(email,"") || jwt_err != nil{
             w.WriteHeader(http.StatusBadRequest)
             CloseConnectionDB(db_Pointer)
             return
@@ -257,8 +294,11 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request){
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusBadRequest)
         }
-        email := r.PostForm.Get("email")
-        if email == ""{
+        email, name_user, jwt_err :=  parseJWT_Token(r.PostForm.Get("token"))
+
+        _ = name_user
+        
+        if strings.EqualFold(email, "") || jwt_err != nil {
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusBadRequest)
             return
@@ -277,7 +317,7 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request){
         }else{
             //get date to delete
             date := r.PostForm.Get("date")
-            if date == ""{
+            if strings.EqualFold(date, ""){
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusBadRequest)
                 return
@@ -299,11 +339,11 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request){
             id, ics, etag := getEtag(email, date_event, db_Pointer)
 
            
-            cod, err := req.Delete_from_cal(id, ics, etag)
+            deleted := req.Delete_from_cal(id, ics, etag)
 
-            _ = cod
+            _ = deleted
 
-            if err != nil{
+            if !deleted{
                 w.WriteHeader(http.StatusInternalServerError)
                 return
 

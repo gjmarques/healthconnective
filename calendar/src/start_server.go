@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"time"
 	"log"
+	"strings"
+	"strconv"
 	
 )
 
@@ -21,23 +23,24 @@ func processAdd(w http.ResponseWriter, r *http.Request){
 
 func processModify(w http.ResponseWriter, r *http.Request){
 	if r.Method == "POST"{
-
+		supp.ModifyEntry(w,r)
 	}else{
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 }
 
-func processRetrieve(w http.ResponseWriter, r *http.Request){
-	if r.Method == "POST"{
-
-	}else{
-		w.WriteHeader(http.StatusUnauthorized)
-	}
-}
 
 func processGet(w http.ResponseWriter, r *http.Request){
 	if r.Method == "GET"{
+		supp.Get_entries(w,r)
+	}else{
+		w.WriteHeader(http.StatusUnauthorized) 
+	}
+}
 
+func processDelete(w http.ResponseWriter, r *http.Request){
+	if r.Method == "GET"{
+		supp.DeleteEntry(w,r)
 	}else{
 		w.WriteHeader(http.StatusUnauthorized) 
 	}
@@ -52,12 +55,47 @@ func processTestAdd(w http.ResponseWriter, r *http.Request){
 }
 
 
-func processTestRetrieve(w http.ResponseWriter, r *http.Request){
+func processTestGet(w http.ResponseWriter, r *http.Request){
 	if r.Method == "GET"{
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"events": [{ date: 20160829T091233001Z , subject: "Consulta Maria" }, { date: 20160829T091333001Z, subject: "Consulta Mário"}, { date: 20160829T0101233001Z, subject : "Consulta João"}]}`))
 
+		return_string := `{ "Events: [ `
+
+		date_test := time.Now()
+		for i:=0; i<4; i++ {               
+			
+			time_now := date_test.Format(time.RFC3339)
+			
+			
+			new_date := strings.Replace(time_now, "-", "", -1)
+			new_date = strings.Replace(new_date, ":", "", -1)
+			
+			return_string = return_string + ` {Summary : "Consulta Maria` + strconv.Itoa(i) + `", Date: "` + new_date + `"}`   
+			
+			if i != 3{
+				return_string = return_string + ","
+			}
+			date_test = date_test.Add(time.Minute * 60)
+		}        
+
+		return_string = return_string + `]}`
+
+
+
+		w.Write([]byte(return_string))
+
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}	
+}
+
+
+
+
+func processTestDelete(w http.ResponseWriter, r *http.Request){
+	if r.Method == "GET"{
+		w.WriteHeader(http.StatusOK)
 	}else{
 		w.WriteHeader(http.StatusUnauthorized)
 	}	
@@ -71,9 +109,11 @@ func main(){
 	http.HandleFunc("/add", processAdd)
 	http.HandleFunc("/get", processGet)
 	http.HandleFunc("/modify", processModify)
-	http.HandleFunc("/retrieve", processRetrieve)
+	http.HandleFunc("/delete", processDelete)
 	http.HandleFunc("/testadd", processTestAdd)
-	http.HandleFunc("/testretrieve", processTestRetrieve)
+	http.HandleFunc("/testget", processTestGet)
+	http.HandleFunc("/testdelete", processTestDelete)
+	http.HandleFunc("/testmodify", processAdd)
 	
 	s := &http.Server{
 		Addr			:	"localhost:9091",

@@ -9,7 +9,11 @@ import (
 	//"strconv"
 	"errors"
 	"encoding/base64"
-    "container/list"
+	"encoding/xml"
+	"strings"
+	"io/ioutil"
+	"encoding/json"
+    //"container/list"
 	build "../build_req"
 )
 
@@ -77,19 +81,23 @@ func Mk_cal(id_user_avail string) bool{
         return false
 	}
 	
-	_ = res
+	if res.StatusCode != 200{
+		return false
+	}
 
 	return true
 }
 
 
 
-func Put_new_cal(id_user_avail string, date string, summary string), ics string (string, string, error){
+func Put_new_cal(id_user_avail string, date string, summary string, ics string) (string, string, error){
 
+
+	var uuid, reqBody string
 	if strings.EqualFold(ics,""){
-		uuid, reqBody := build.Build_PUT(date, summary, "")
+		uuid, reqBody = build.Build_PUT(date, summary, "")
 	}else{
-		uuid, reqBody := build.Build_PUT(date, summary, ics)
+		uuid, reqBody = build.Build_PUT(date, summary, ics)
 
 	}
 	
@@ -116,13 +124,14 @@ func Put_new_cal(id_user_avail string, date string, summary string), ics string 
         return "", "", errors.New("")
 	}
 	
+	var etag string
 	res, err := client.Do(req)
     if err != nil {
         fmt.Println(err)
         return "", "", errors.New("")
 	}
 	if res.StatusCode == 201{
-		etag := strings.Trim(res.Header["Etag"][0], "\"")
+		etag = strings.Trim(res.Header["Etag"][0], "\"")
 	}else{
 		return "", "", errors.New("")	
 	}
@@ -130,12 +139,8 @@ func Put_new_cal(id_user_avail string, date string, summary string), ics string 
 	return uuid, etag, nil
 }
 
-func Propfind_cal(){
-	//req, err := http.NewRequest(calendar_address + id_user_avail + "/calendar","application/xml", bytes.NewBuffer([]byte(build.Build_MKCALENDAR(email))))
-    
-}
 
-func Report_cal(id_user_avail string) (string, error){
+func Report_cal(id_user_avail string, date string) (string, error){
 
 	client := &http.Client {
         Transport: &http.Transport{
@@ -163,10 +168,10 @@ func Report_cal(id_user_avail string) (string, error){
 
 	var xml_data Multistatus
 
-    body, _ = ioutil.ReadAll(res.Body)
+    body, _ := ioutil.ReadAll(res.Body)
     if err != nil {
         fmt.Println(err)
-        return
+        return "", errors.New("")
     }
     //fmt.Println(string(body))
     
@@ -177,11 +182,11 @@ func Report_cal(id_user_avail string) (string, error){
 		calData := strings.Split(r.PropS[0].PropE[0].CalendarData, "\n")
 
 
-		date := strings.Split(calData[6],":")[1]
+		date_ev := strings.Split(calData[5],":")[1]
 		summary := strings.Split(calData[8],":")[1]
-		
-		append(ev.Events, Event{summary, date})
-		
+		if strings.EqualFold(strings.Split(date_ev, "T")[0], strings.Split(date, "T")[0]) {
+			ev.Events = append(ev.Events, Event{summary, date_ev})
+		}
 	}   
 	
 	json_res, err := json.Marshal(ev) 
@@ -191,7 +196,7 @@ func Report_cal(id_user_avail string) (string, error){
 
 	}
 
-	return json_res, nil
+	return string(json_res), nil
 
 	
 	

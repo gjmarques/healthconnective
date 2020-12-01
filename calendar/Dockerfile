@@ -9,6 +9,8 @@ RUN apk add git
 
 RUN go get -u github.com/go-sql-driver/mysql
 
+RUN go get -u github.com/dgrijalva/jwt-go
+
 RUN go build src/start_server.go
 
 CMD ["./start_server"]

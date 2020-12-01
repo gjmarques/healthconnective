@@ -59,19 +59,17 @@ var report_content = `
 </c:calendar-query>`
 
 
-//func Build_PROPFIND(){}
-
-
-
 func Build_REPORT() string{
 	return report_content
 }
 
 func Build_PUT(date string, summary string, ics string) (string, string){
+	
+	var uuid string
 	if strings.EqualFold(ics, ""){
-		uuid := generate_uuid()
+		uuid = generate_uuid()
 	}else{
-		uuid := ics
+		uuid = ics
 	}
 
 
