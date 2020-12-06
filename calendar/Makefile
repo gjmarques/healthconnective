@@ -3,6 +3,7 @@
 
 start_service:
 	docker-compose up -d
+	go run src/start_server.go
 	#python3 -m radicale --storage-filesystem-folder=~/.var/lib/radicale/collections --server-hosts 0.0.0.0:9095
 
 

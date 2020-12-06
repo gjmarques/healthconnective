@@ -13,6 +13,7 @@ import (
     "strconv"
     "strings"
     "math/rand"
+    "log"
     //"fmt"
     //"bytes"
     req "../calendar_requests"
@@ -43,7 +44,7 @@ func parseJWT_Token(token_jwt string) (string, error){
     })
 
     if err != nil{
-        return "", "", errors.New("1")
+        return  "", errors.New("1")
 
     }
     if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
@@ -142,24 +143,46 @@ func IsQueryTermOK(term string) bool{
         var isOK = re.MatchString(term)
         
         if isOK{
-            return true
-        }else{
             return false
+        }else{
+            return true
         }
     }
 
 }
 
+
+func Transform_date(date string) (string, error) {
+
+
+    date_form,err := time.Parse(time.RFC3339,date)
+
+    if err != nil{
+        log.Println(err)
+        return "", nil
+    }
+
+    new_date := date_form.Format(time.RFC3339)    
+    new_date = strings.Replace(new_date, "-", "", -1)
+    new_date = strings.Replace(new_date, ":", "", -1)
+
+    return new_date, nil
+}
+
+
+
 func ChangeEvent(id_user string, etag_old string, date_old string, ics_old string, etag_new string, date_new string, ics_new string, db_Pointer *sql.DB) bool{
     
     update, err := db_Pointer.Prepare("UPDATE Users_cal SET ics=?, date_start=?, etag=? WHERE id_user=? AND ics=? AND etag=? AND date_start=?")
     if err != nil {
+        log.Println(err)
         return false
     }
     
     //execute
-    res, err := update.Exec(ics_new, date_new, etag_new, id_user, ics_old, etag_old, date_old)
-    if err != nil {
+    _ , err_exec := update.Exec(ics_new, date_new, etag_new, id_user, ics_old, etag_old, date_old)
+    if err_exec != nil {
+        log.Println(err_exec)
         return false
     }
 
@@ -170,8 +193,10 @@ func ChangeEvent(id_user string, etag_old string, date_old string, ics_old strin
 
 func AddEvent(id_user string, etag string, date string, ics string, db_Pointer *sql.DB) bool{
     
+
     insert, err := db_Pointer.Prepare("INSERT INTO Users_cal(id_user, ics, date_start, etag) VALUES (?, ?, ?, ?);")
     if err != nil {
+        log.Println(err.Error())
         return false
     }
     
@@ -179,6 +204,7 @@ func AddEvent(id_user string, etag string, date string, ics string, db_Pointer *
     res, err := insert.Exec( id_user, ics, date, etag)
     _ = res
     if err != nil {
+        log.Println(err.Error())
         return false
     }
 
@@ -188,17 +214,39 @@ func AddEvent(id_user string, etag string, date string, ics string, db_Pointer *
 
 
 
-func AddUser(email string, PersonName string, db_Pointer *sql.DB) bool{
+func DelEvent(id_user string , etag string , ics string, db_Pointer *sql.DB) bool{
     
-    insert, err := db_Pointer.Prepare("INSERT INTO Users(email, PersonName) VALUES (?, ?);")
+    del, err := db_Pointer.Prepare("DELETE FROM Users_cal WHERE id_user=? AND etag=? AND ics=?;")
     if err != nil {
+        log.Println(err)
         return false
     }
     
     //execute
-    res, err := insert.Exec( email, PersonName)
+    res, err := del.Exec(id_user,etag,ics)
     _ = res
     if err != nil {
+        log.Println(err)
+        return false
+    }
+
+
+    return true
+}
+
+func AddUser(email string,  db_Pointer *sql.DB) bool{
+    
+    insert, err := db_Pointer.Prepare("INSERT INTO Users(email) VALUES (?);")
+    if err != nil {
+        log.Println(err)
+        return false
+    }
+    
+    //execute
+    res, err := insert.Exec( email)
+    _ = res
+    if err != nil {
+        log.Println(err)
         return false
     }
 
@@ -217,6 +265,7 @@ func getEtag(email string, date string, db_Pointer *sql.DB) (string, string, str
     var etag string
     err := result_row.Scan(&id, &ics, &etag)
     if err != nil {
+        log.Println(err)
         return "", "", ""
     }
 
@@ -224,13 +273,14 @@ func getEtag(email string, date string, db_Pointer *sql.DB) (string, string, str
 }
 
 func isUserinDatabase(email string, db_Pointer *sql.DB) string{
-    sqlStatement := "SELECT id_user FROM Users WHERE email = ?;"
+    sqlStatement := "SELECT id_user FROM Users WHERE email = ? ;"
 
 
     result_row := db_Pointer.QueryRow(sqlStatement, email)
     var id string
     err := result_row.Scan(&id)
     if err != nil {
+        log.Println(err)
         return "-1"
     }
 
@@ -289,20 +339,24 @@ func IsAvailable(w http.ResponseWriter, r *http.Request){
 
 
 
-func AddEntry(w http.ResponseWriter, r *http.Request){
+func AddEntry(w http.ResponseWriter, r *http.Request) bool{
     db_Pointer, err := OpenConnectionDB()
 
     if err != nil {
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusInternalServerError)
-        w.Write([]byte(`{"error": "Could not access database"}`))
-        return
+        w.Write([]byte(`{"error": ` + err.Error()    +`}`))
+        return false
     }else{
         err := r.ParseForm()
+
+        
         if err != nil {
             w.WriteHeader(http.StatusBadRequest)
             CloseConnectionDB(db_Pointer)
-            return 
+            w.Write([]byte(`{"error": ` + err.Error()    +`}`))
+        
+            return false
         }
 
         email, jwt_err :=  parseJWT_Token(r.PostForm.Get("token"))
@@ -311,12 +365,16 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
         if strings.EqualFold(email, "") || jwt_err != nil{
             w.WriteHeader(http.StatusBadRequest)
             CloseConnectionDB(db_Pointer)
-            return
+            w.Write([]byte(`{"error": ` + jwt_err.Error()    +`}`))
+        
+            return false
         }else{
             if !IsQueryTermOK(email){
                 w.WriteHeader(http.StatusBadRequest)
                 CloseConnectionDB(db_Pointer)
-                return
+                w.Write([]byte(`{"error": sql injection refused }`))
+        
+                return false
             }
         }
         
@@ -325,39 +383,54 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
         id_user_avail := isUserinDatabase(email, db_Pointer)
         summary := r.PostForm.Get("summary")
         date := r.PostForm.Get("date")
-        name_user := r.PostForm.Get("name_user")
-
+        
         if strings.EqualFold(id_user_avail,"-1") {
             
-            if !IsQueryTermOK(name_user){
-                w.WriteHeader(http.StatusBadRequest)
-                CloseConnectionDB(db_Pointer)
-                return
-            }
+
+            log.Println("Add entry - user with email " + email + " not present in the database")
             //create user first
-            added := AddUser(email, name_user, db_Pointer)
+            added := AddUser(email, db_Pointer)
             
             if !added{
 
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusInternalServerError)
-                return 
+                log.Println("AddEntry - User not added to DB")
+                return false
             }
 
-            id_user_avail := isUserinDatabase(email, db_Pointer)
+            id_user_avail = isUserinDatabase(email, db_Pointer)
             
             if strings.EqualFold(id_user_avail, "-1"){
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusInternalServerError)
-                return
+                log.Println("AddEntry - User not added to DB")
+                return false
+            }
+
+
+            addedCal := req.Mk_cal(id_user_avail) 
+            
+            if !addedCal{
+                CloseConnectionDB(db_Pointer)
+                w.WriteHeader(http.StatusInternalServerError)
+                log.Println("AddEntry - Cannor create calendar")
+                return false
+            
+
+
             }
         }
 
         
         //add entry to calendar  
-        uuid, etag, err := req.Put_new_cal(id_user_avail, date, summary, "")
-        if err != nil{
-            
+        uuid, etag, err_put := req.Put_new_cal(id_user_avail, date, summary, "")
+        if err_put != nil{
+            log.Println(err_put)
+            CloseConnectionDB(db_Pointer)
+            w.WriteHeader(http.StatusInternalServerError)
+            log.Println("AddEntry - Event not added to calendar server")
+            return false
             
         }
 
@@ -367,11 +440,13 @@ func AddEntry(w http.ResponseWriter, r *http.Request){
         
         if !addedEv{
             w.WriteHeader(http.StatusInternalServerError)
-            return 
+
+            log.Println("AddEntry - Event not added to DB")
+            return false
         }
 
         w.WriteHeader(http.StatusOK)
-        return
+        return true
 
     }
 }
@@ -382,15 +457,18 @@ func ModifyEntry(w http.ResponseWriter, r *http.Request){
 
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
+        log.Println(err)
         return
     }else{
-        err := r.ParseForm()
-        if err != nil {
+        err_form := r.ParseForm()
+        if err_form != nil {
+            log.Println(err_form)
             w.WriteHeader(http.StatusBadRequest)
         }
         email, jwt_err :=  parseJWT_Token(r.PostForm.Get("token"))
         
         if strings.EqualFold(email,"") || jwt_err != nil{
+            log.Println(jwt_err)
             w.WriteHeader(http.StatusBadRequest)
             CloseConnectionDB(db_Pointer)
             return
@@ -402,33 +480,46 @@ func ModifyEntry(w http.ResponseWriter, r *http.Request){
             }
         }
 
+        id_user_avail := isUserinDatabase(email, db_Pointer)
+        if strings.EqualFold(id_user_avail, "-1"){
 
+            w.WriteHeader(http.StatusForbidden)
+            CloseConnectionDB(db_Pointer)
+            return
+
+        }
         init_date := r.PostForm.Get("old_date")
-        init_date_form,err := time.Parse(time.RFC3339,init_date)
+        init_date_form,err_parse := time.Parse(time.RFC3339,init_date)
 
+
+        log.Println(err_parse)
         old_date := init_date_form.Format(time.RFC3339)    
         old_date = strings.Replace(old_date, "-", "", -1)
         old_date = strings.Replace(old_date, ":", "", -1)
 
         new_date := r.PostForm.Get("new_date")
-        new_date_form,err := time.Parse(time.RFC3339,new_date)
+       
 
-        date := new_date_form.Format(time.RFC3339)    
-        date = strings.Replace(date, "-", "", -1)
-        date = strings.Replace(date, ":", "", -1)
-        
-        
         summary := r.PostForm.Get("summary")
         
-        id_user, ics, etag_old := getEtag(email, old_date, db_Pointer)
+        id_user, ics, etag_old := getEtag(email, init_date, db_Pointer)
         
-        ics_new, etag_new, err_modify := req.Put_new_cal(id_user, date, summary, ics)
+
+        //log.Printf("%s %s %s", id_user, ics, etag_old)
+
+        ics_new, etag_new, err_modify := req.Put_new_cal(id_user, new_date, summary, ics)
         
+
+
+        //log.Printf("%s %s ", ics_new, etag_new)
+
         changed_event := ChangeEvent(id_user, etag_old, init_date, ics, etag_new, new_date, ics_new, db_Pointer)
         
         
-        if !changed_event {
-             w.WriteHeader(http.StatusInternalServerError)
+        if !changed_event || err_modify != nil {
+
+            log.Println(err_modify)
+            w.WriteHeader(http.StatusInternalServerError)
             return
         }
     }
@@ -443,17 +534,20 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request){
     db_Pointer, err := OpenConnectionDB()
 
     if err != nil {
+        log.Println(err)
         CloseConnectionDB(db_Pointer)
         w.WriteHeader(http.StatusInternalServerError)
     }else{
-        err := r.ParseForm()
-        if err != nil {
+        err_form := r.ParseForm()
+        if err_form != nil {
+            log.Println(err_form)
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusBadRequest)
         }
-        email, jwt_err :=  parseJWT_Token(r.PostForm.Get("token"))
+        email, jwt_err :=  parseJWT_Token(r.Form.Get("token"))
 
         if strings.EqualFold(email, "") || jwt_err != nil {
+            log.Println(jwt_err)
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusBadRequest)
             return
@@ -465,22 +559,22 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request){
             }
         }
         id_user_avail := isUserinDatabase(email, db_Pointer)
-        if id_user_avail != "-1" {
+        if strings.EqualFold(id_user_avail,"-1") {
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusForbidden)
             return   
         }else{
             //get date to delete
-            date := r.PostForm.Get("date")
+            date := r.Form.Get("date")
             if strings.EqualFold(date, ""){
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusBadRequest)
                 return
             }
-            CloseConnectionDB(db_Pointer)
-            ndate,err := time.Parse(time.RFC3339,date)
+            ndate,err_parse := time.Parse(time.RFC3339,date)
 
-            if err != nil{
+            if err_parse != nil{
+                log.Println(err_parse)
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusBadRequest)
                 return
@@ -491,18 +585,29 @@ func DeleteEntry(w http.ResponseWriter, r *http.Request){
 	        date_event = strings.Replace(date_event, "-", "", -1)
 	        date_event = strings.Replace(date_event, ":", "", -1)
 	
-            id, ics, etag := getEtag(email, date_event, db_Pointer)
+            id, ics, etag := getEtag(email, date, db_Pointer)
 
+            log.Printf("%s %s %s", id, ics, etag)
            
-            deleted := req.Delete_from_cal(id, ics, etag)
+            deleted := req.Delete_from_cal(id, etag, ics)
 
-
+            
             if !deleted{
+                CloseConnectionDB(db_Pointer)
+            
                 w.WriteHeader(http.StatusInternalServerError)
                 return
 
             }
+
+            del := DelEvent(id, etag, ics, db_Pointer)
+            CloseConnectionDB(db_Pointer)
             
+            if !del{
+            
+                w.WriteHeader(http.StatusInternalServerError)
+                return
+            }
             w.WriteHeader(http.StatusOK)
             return
 
@@ -518,18 +623,21 @@ func Get_entries(w http.ResponseWriter, r *http.Request){
     db_Pointer, err := OpenConnectionDB()
 
     if err != nil {
+        log.Println(err)
         CloseConnectionDB(db_Pointer)
         w.WriteHeader(http.StatusInternalServerError)
     }else{
-        err := r.ParseForm()
-        if err != nil {
+        err_form := r.ParseForm()
+        if err_form != nil {
+            log.Println(err_form)
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusBadRequest)
         }
-        email, jwt_err :=  parseJWT_Token(r.PostForm.Get("token"))
+        email, jwt_err :=  parseJWT_Token(r.Form.Get("token"))
 
         
         if strings.EqualFold(email, "") || jwt_err != nil {
+            log.Println(jwt_err)
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusBadRequest)
             return
@@ -541,38 +649,49 @@ func Get_entries(w http.ResponseWriter, r *http.Request){
             }
         }
         id_user_avail := isUserinDatabase(email, db_Pointer)
-        if id_user_avail != "-1" {
+        if strings.EqualFold(id_user_avail,"-1") {
             CloseConnectionDB(db_Pointer)
             w.WriteHeader(http.StatusForbidden)
             return   
         }else{
-            //get date to delete
-            date := r.PostForm.Get("date")
+            //get date
+            date := r.Form.Get("date")
             if strings.EqualFold(date, ""){
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusBadRequest)
                 return
             }
             CloseConnectionDB(db_Pointer)
-            ndate,err := time.Parse(time.RFC3339,date)
+            ndate,err_date := time.Parse(time.RFC3339,date)
+            transformed_date := ndate.Format(time.RFC3339)    
+            transformed_date = strings.Replace(transformed_date, "-", " ", -1)
+            transformed_date = strings.Replace(transformed_date, ":", " ", -1)
+            transformed_date = strings.Replace(transformed_date, "T", " ", -1)
+            transformed_date = strings.Replace(transformed_date, "Z", " ", -1)
 
-            if err != nil{
+            date_info := strings.Split(transformed_date, " ")
+           
+
+
+            if err_date != nil{
+                log.Println(err_date)
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusBadRequest)
                 return
 
             }
             
-            json_string, err_report := req.Report_cal(id_user_avail, date)
+            json_string, err_report := req.Report_cal(id_user_avail, date_info[0] + date_info[1] + date_info[2])
             
             if err_report != nil{
+                log.Println(err_report)
                 CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusBadRequest)
                 return
 
             }
             
-             w.WriteHeader(http.StatusOK)
+            w.WriteHeader(http.StatusOK)
             w.Header().Set("Content-Type", "application/json")
             w.Write([]byte(json_string))
             
@@ -590,12 +709,12 @@ func OpenConnectionDB() (*sql.DB, error) {
     }
     
     db.SetConnMaxLifetime(time.Minute * 3)
-    db.SetMaxOpenConns(10)
-    db.SetMaxIdleConns(10)
+    db.SetMaxOpenConns(100)
+    db.SetMaxIdleConns(100)
 
     err = db.Ping()
     if err != nil {
-        return nil,errors.New("Database not available")
+        return nil,err
     }
 
     return db, nil

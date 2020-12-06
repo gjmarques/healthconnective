@@ -3,9 +3,10 @@ package buildBody
 import (
 	"time"
     "strings"
-    "fmt"
+    "log"
     "math/big"
-    "crypto/rand"
+	"crypto/rand"
+	"fmt"
 )
 
 //content type application/xml
@@ -36,11 +37,11 @@ BEGIN:VCALENDAR
 VERSION:2.0
 PRODID:-//ES2020//CalDAV Client//EN
 BEGIN:VEVENT
-UID: %s
+UID:%s
 DTSTAMP:%s
 DTSTART:%s
-DTEND: %s
-SUMMARY: %s
+DTEND:%s
+SUMMARY:%s
 END:VEVENT
 END:VCALENDAR
 `
@@ -81,7 +82,7 @@ func Build_PUT(date string, summary string, ics string) (string, string){
 	ndate,err := time.Parse(time.RFC3339,date)
     
     if err != nil{
-        fmt.Println(err)
+        log.Println(err)
     }
     
 	
@@ -94,8 +95,14 @@ func Build_PUT(date string, summary string, ics string) (string, string){
 	date_end = strings.Replace(date_end, "-", "", -1)
 	date_end = strings.Replace(date_end, ":", "", -1)
 
-	return uuid, fmt.Sprintf(put_content, uuid, d_stamp,date_start, date_end, summary)
 
+
+	reqBody := fmt.Sprintf(put_content, uuid, d_stamp,date_start, date_end, summary)
+
+	log.Println(reqBody)
+
+
+	return uuid, reqBody
 }
 func Build_MKCALENDAR() string{
 	return mkcalendar_content

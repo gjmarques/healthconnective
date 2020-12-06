@@ -22,13 +22,13 @@ services:
     ports:
       - 9093:8080
   
-  calendar_golangApp:
-    container_name: calendar_service
-    image: calendarapp:latest
-    ports:
-      - 9091:9091
-    depends_on:
-      - db
+  #calendar_golangApp:
+  #  container_name: calendar_service
+  #  image: calendarapp:latest
+  #  ports:
+  #    - 9091:9091
+  #  depends_on:
+  #    - db
 
 
 

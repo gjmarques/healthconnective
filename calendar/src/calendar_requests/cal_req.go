@@ -8,6 +8,7 @@ import (
 	"bytes"
 	//"strconv"
 	"errors"
+	"log"
 	"encoding/base64"
 	"encoding/xml"
 	"strings"
@@ -62,8 +63,7 @@ func Mk_cal(id_user_avail string) bool{
 	var buf bytes.Buffer
     buf.WriteString(build.Build_MKCALENDAR())
     encodedStr := base64.StdEncoding.EncodeToString([]byte(id_user_avail + ":" + id_user_avail))
-    fmt.Println(encodedStr)
-
+    
 	
 
     req, err := http.NewRequest("MKCOL", calendar_address + id_user_avail + "/calendar", &buf)
@@ -77,11 +77,11 @@ func Mk_cal(id_user_avail string) bool{
 	
 	res, err := client.Do(req)
     if err != nil {
-        fmt.Println(err)
+        log.Println(err)
         return false
 	}
 	
-	if res.StatusCode != 200{
+	if res.StatusCode != 201{
 		return false
 	}
 
@@ -92,6 +92,7 @@ func Mk_cal(id_user_avail string) bool{
 
 func Put_new_cal(id_user_avail string, date string, summary string, ics string) (string, string, error){
 
+	//log.Printf("%s %s %s %s", id_user_avail, date, summary, ics)
 
 	var uuid, reqBody string
 	if strings.EqualFold(ics,""){
@@ -100,6 +101,10 @@ func Put_new_cal(id_user_avail string, date string, summary string, ics string) 
 		uuid, reqBody = build.Build_PUT(date, summary, ics)
 
 	}
+	
+
+
+
 	
 	client := &http.Client {
         Transport: &http.Transport{
@@ -110,8 +115,7 @@ func Put_new_cal(id_user_avail string, date string, summary string, ics string) 
 	var buf bytes.Buffer
     buf.WriteString(reqBody)
     encodedStr := base64.StdEncoding.EncodeToString([]byte(id_user_avail + ":" + id_user_avail))
-    fmt.Println(encodedStr)
-
+    
 	
 
     req, err := http.NewRequest("PUT", calendar_address + id_user_avail + "/calendar/" + uuid +".ics", &buf)
@@ -120,14 +124,14 @@ func Put_new_cal(id_user_avail string, date string, summary string, ics string) 
 
 
 	if err != nil{
-		fmt.Println(err)
+		log.Println(err)
         return "", "", errors.New("")
 	}
 	
 	var etag string
 	res, err := client.Do(req)
     if err != nil {
-        fmt.Println(err)
+        log.Println(err)
         return "", "", errors.New("")
 	}
 	if res.StatusCode == 201{
@@ -170,7 +174,7 @@ func Report_cal(id_user_avail string, date string) (string, error){
 
     body, _ := ioutil.ReadAll(res.Body)
     if err != nil {
-        fmt.Println(err)
+        log.Println(err)
         return "", errors.New("")
     }
     //fmt.Println(string(body))
@@ -184,14 +188,15 @@ func Report_cal(id_user_avail string, date string) (string, error){
 
 		date_ev := strings.Split(calData[5],":")[1]
 		summary := strings.Split(calData[8],":")[1]
-		if strings.EqualFold(strings.Split(date_ev, "T")[0], strings.Split(date, "T")[0]) {
-			ev.Events = append(ev.Events, Event{summary, date_ev})
+		if strings.EqualFold(strings.Split(date_ev, "T")[0], date) {
+			ev.Events = append(ev.Events, Event{summary, get_date_back(date_ev)})
 		}
 	}   
 	
 	json_res, err := json.Marshal(ev) 
 
 	if err != nil {
+		log.Println(err)
 		return "", errors.New("")
 
 	}
@@ -215,18 +220,24 @@ func Delete_from_cal(id_user_avail string, etag string, ics string) bool{
 	if err != nil{
 		return false
 	}
-	req.Header.Add("If-Match", etag)
+	
 	resp, err := client.Do(req)
 	
 	if err != nil {
-        fmt.Println(err)
+        log.Println(err)
         return false
 	}
 	
 	if resp.StatusCode != 200{
+		log.Println(resp)
 		return false
 	}
 
 	return true
     
+}
+
+
+func get_date_back(date string) string{
+	return date[0:4] + "-" + date[4:6] + "-" + date[6:11]  + ":" + date[11:13] + ":" + date[13:16]
 }
