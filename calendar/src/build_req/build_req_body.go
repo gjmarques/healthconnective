@@ -46,6 +46,11 @@ END:VEVENT
 END:VCALENDAR
 `
 
+var free_busy =`<C:free-busy-query xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <C:time-range start="%s"
+				  end="%s"/>
+</C:free-busy-query>
+`
 var report_content = `
 <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">
     <d:prop>
@@ -60,6 +65,31 @@ var report_content = `
 </c:calendar-query>`
 
 
+/*
+func Build_FreeBusy(date_init string) string{
+
+	ndate, err := time.Parse(time.RFC3339, date_init)
+
+	_= err
+	ndate_end := ndate.Add(time.Minute * 60)
+
+	date_start := ndate.Format(time.RFC3339)
+	date_start = strings.Replace(date_start, "-", "", -1)
+	date_start = strings.Replace(date_start, ":", "", -1)
+	
+
+	date_end := ndate_end.Format(time.RFC3339)
+	date_end = strings.Replace(date_end, "-", "", -1)
+	date_end = strings.Replace(date_end, ":", "", -1)
+	
+	free_busy_body := fmt.Sprintf(free_busy, date_start, date_end)
+
+
+	log.Println(free_busy_body)
+
+	return free_busy_body
+}
+*/
 func Build_REPORT() string{
 	return report_content
 }

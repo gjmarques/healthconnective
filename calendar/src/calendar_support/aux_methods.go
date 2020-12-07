@@ -272,6 +272,8 @@ func getEtag(email string, date string, db_Pointer *sql.DB) (string, string, str
     return id, ics, etag
 }
 
+
+
 func isUserinDatabase(email string, db_Pointer *sql.DB) string{
     sqlStatement := "SELECT id_user FROM Users WHERE email = ? ;"
 
@@ -289,7 +291,7 @@ func isUserinDatabase(email string, db_Pointer *sql.DB) string{
 
 
 func hasConflit(email string, date string, db_Pointer *sql.DB) bool{
-    sqlStatement := "SELECT U.id_user FROM Users AS U JOIN Users_cal AS UC ON WHERE U.email = ? AND UC.date_start = ?;"
+    sqlStatement := "SELECT U.id_user FROM Users AS U JOIN Users_cal AS UC ON U.id_user = UC.id_user WHERE U.email = ? AND UC.date_start = ?;"
 
 
     result_row := db_Pointer.QueryRow(sqlStatement, email, date)
@@ -297,6 +299,7 @@ func hasConflit(email string, date string, db_Pointer *sql.DB) bool{
     
     err := result_row.Scan(&id)
     if err != nil {
+        log.Println(err)
         return false
     }
 
@@ -422,7 +425,17 @@ func AddEntry(w http.ResponseWriter, r *http.Request) bool{
             }
         }
 
+        conflit := hasConflit(email, date, db_Pointer)
         
+        if conflit{
+            CloseConnectionDB(db_Pointer)
+            w.WriteHeader(http.StatusConflict)
+            log.Println("AddEntry - Conflict in dates")
+            return false
+            
+
+        }
+
         //add entry to calendar  
         uuid, etag, err_put := req.Put_new_cal(id_user_avail, date, summary, "")
         if err_put != nil{
@@ -662,30 +675,14 @@ func Get_entries(w http.ResponseWriter, r *http.Request){
                 return
             }
             CloseConnectionDB(db_Pointer)
-            ndate,err_date := time.Parse(time.RFC3339,date)
-            transformed_date := ndate.Format(time.RFC3339)    
-            transformed_date = strings.Replace(transformed_date, "-", " ", -1)
-            transformed_date = strings.Replace(transformed_date, ":", " ", -1)
-            transformed_date = strings.Replace(transformed_date, "T", " ", -1)
-            transformed_date = strings.Replace(transformed_date, "Z", " ", -1)
-
-            date_info := strings.Split(transformed_date, " ")
-           
-
-
-            if err_date != nil{
-                log.Println(err_date)
-                CloseConnectionDB(db_Pointer)
-                w.WriteHeader(http.StatusBadRequest)
-                return
-
-            }
+            transformed_date := strings.Replace(date, "-", "", -1)
             
-            json_string, err_report := req.Report_cal(id_user_avail, date_info[0] + date_info[1] + date_info[2])
+
+           
+            json_string, err_report := req.Report_cal(id_user_avail, transformed_date)
             
             if err_report != nil{
                 log.Println(err_report)
-                CloseConnectionDB(db_Pointer)
                 w.WriteHeader(http.StatusBadRequest)
                 return
 

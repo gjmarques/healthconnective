@@ -143,6 +143,52 @@ func Put_new_cal(id_user_avail string, date string, summary string, ics string) 
 	return uuid, etag, nil
 }
 
+/*
+func Report_cal_free_busy(id_user_avail string, date string) (bool, error){
+	client := &http.Client {
+        Transport: &http.Transport{
+            DisableCompression: true,
+        },
+	}
+	
+	var buf bytes.Buffer
+    buf.WriteString(build.Build_FreeBusy(date))
+    encodedStr := base64.StdEncoding.EncodeToString([]byte(id_user_avail + ":" + id_user_avail))
+	
+	
+
+
+	req, err1 := http.NewRequest("REPORT",calendar_address + id_user_avail + "/calendar", &buf)
+	_ = err1
+	req.Header.Add("Authorization", "Basic " + encodedStr)
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	res, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return false, errors.New("")
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+    if err != nil {
+        fmt.Println(err)
+        return false, err
+    }
+	log.Println(string(body))
+
+	var xml_data Multistatus
+
+    if err := xml.Unmarshal([]byte(body), &xml_data); err != nil {}
+	
+
+
+	if xml_data.Responses != nil{
+		return true, nil
+	}	
+
+	return true, nil
+}
+
+*/
 
 func Report_cal(id_user_avail string, date string) (string, error){
 
@@ -178,10 +224,11 @@ func Report_cal(id_user_avail string, date string) (string, error){
         return "", errors.New("")
     }
     //fmt.Println(string(body))
-    
+	
 	var ev Events
     if err := xml.Unmarshal([]byte(body), &xml_data); err != nil {}
 	
+
 	for _, r := range xml_data.Responses {
 		calData := strings.Split(r.PropS[0].PropE[0].CalendarData, "\n")
 
@@ -192,7 +239,11 @@ func Report_cal(id_user_avail string, date string) (string, error){
 			ev.Events = append(ev.Events, Event{summary, get_date_back(date_ev)})
 		}
 	}   
-	
+
+	if ev.Events == nil{
+		ev.Events = make([]Event, 0)
+	}
+
 	json_res, err := json.Marshal(ev) 
 
 	if err != nil {
