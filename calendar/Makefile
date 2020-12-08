@@ -12,7 +12,7 @@ build_calendar_service:
 
 
 stop_service:
-	docker-compose down 
+	docker-compose stop
 	
 install_radicale:
 	python3 -m pip install --upgrade https://github.com/Kozea/Radicale/archive/master.tar.gz

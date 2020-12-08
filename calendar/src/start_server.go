@@ -9,8 +9,21 @@ import (
 )
 
 
+
+
+func processRegister(w http.ResponseWriter, r *http.Request){
+	if r.Method == "GET"{
+		supp.AddUserInfo(w,r)
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+}
+
+
 func processAdd(w http.ResponseWriter, r *http.Request){
-	if r.Method == "POST"{
+
+	
+	if r.Method == "GET"{
 		supp.AddEntry(w,r)
 	}else{
 		w.WriteHeader(http.StatusUnauthorized)
@@ -18,7 +31,7 @@ func processAdd(w http.ResponseWriter, r *http.Request){
 }
 
 func processModify(w http.ResponseWriter, r *http.Request){
-	if r.Method == "POST"{
+	if r.Method == "GET"{
 		supp.ModifyEntry(w,r)
 	}else{
 		w.WriteHeader(http.StatusUnauthorized)
@@ -43,7 +56,7 @@ func processDelete(w http.ResponseWriter, r *http.Request){
 }
 
 func processTestAdd(w http.ResponseWriter, r *http.Request){
-	if r.Method == "POST"{
+	if r.Method == "GET"{
 		w.WriteHeader(http.StatusOK)
 	}else{
 		w.WriteHeader(http.StatusUnauthorized)
@@ -51,7 +64,7 @@ func processTestAdd(w http.ResponseWriter, r *http.Request){
 }
 
 func processTestJwt(w http.ResponseWriter, r *http.Request){
-    if r.Method == "POST"{
+    if r.Method == "GET"{
         supp.TestJwt(w,r)
         
         
@@ -82,7 +95,7 @@ func processTestDelete(w http.ResponseWriter, r *http.Request){
 }
 
 func processAvailable(w http.ResponseWriter, r *http.Request){
-	if r.Method == "POST"{
+	if r.Method == "GET"{
         supp.IsAvailable(w,r)
         
 	}else{
@@ -99,6 +112,7 @@ func processAvailable(w http.ResponseWriter, r *http.Request){
 func main(){
 
 	fmt.Printf("Starting server...")
+	http.HandleFunc("/register", processRegister)
 	http.HandleFunc("/add", processAdd)
 	http.HandleFunc("/get", processGet)
 	http.HandleFunc("/modify", processModify)
