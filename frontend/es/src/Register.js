@@ -1,7 +1,5 @@
-import React, { Component } from 'react';
-import { instanceOf } from 'prop-types';
+import React from 'react';
 import { Cookies } from 'react-cookie';
-import FacebookLogin from 'react-facebook-login';
 
 class Register extends React.Component {
      
@@ -11,7 +9,7 @@ class Register extends React.Component {
           name : "",
           loading : true,
           email : "",
-          nUtente : 0,
+          nUtente : "",
           med : 0,
         };
 
@@ -23,7 +21,7 @@ class Register extends React.Component {
       componentDidMount(){
         const cookies = new Cookies();
         console.log();
-        if(cookies.get('valid')==1){
+        if(cookies.get('valid')===1){
           window.location.href='./';
         }else{
          this.setState({loading:false});
@@ -36,7 +34,7 @@ class Register extends React.Component {
         }
 
         handleChange2(event) {   
-            if(this.state.med==0){
+            if(this.state.med===0){
                 this.setState({med:1});
             }else{
                 this.setState({med:0});

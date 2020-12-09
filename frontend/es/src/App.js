@@ -11,9 +11,15 @@ import Farm from './Farm';
 import Consultas from './Consultas';
 import Profile from './Profile';
 import Register from './Register';
+import Home2 from './Home2';
+import MedAva from './medAva';
+import { Cookies } from 'react-cookie';
+
+
 function App() {
 
-
+  const cookies = new Cookies();
+  var s = cookies.get('med');
   return (
     <Router>
         <Switch>
@@ -26,6 +32,9 @@ function App() {
           <Route path="/consultas">
             <Consultas />
           </Route>
+          <Route  path="/med">
+            <MedAva />
+          </Route>
           <Route path="/profile">
             <Profile />
           </Route>
@@ -33,8 +42,15 @@ function App() {
             <Register />
           </Route>
           <Route path="/"  exact>
+          {s==='1' ?
             <Home />
+            :
+            <Home2 />
+          }
+            
           </Route>
+
+          
           <Route component={NotFoundPage} />
         </Switch>
     </Router> 
