@@ -14,6 +14,7 @@ import (
 	"strings"
 	"io/ioutil"
 	"encoding/json"
+	"sort"
     //"container/list"
 	build "../build_req"
 )
@@ -242,7 +243,14 @@ func Report_cal(id_user_avail string, date string) (string, error){
 
 	if ev.Events == nil{
 		ev.Events = make([]Event, 0)
+	}else{
+		sort.SliceStable(ev.Events, func(i, j int) bool {
+			return ev.Events[i].Date < ev.Events[j].Date
+		})
+
 	}
+
+
 
 	json_res, err := json.Marshal(ev) 
 
