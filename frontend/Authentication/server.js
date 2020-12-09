@@ -54,14 +54,89 @@ app.get("/verify", (req, res, next) => {
 
 
 
-app.get("/add", (req, res, next) => {
 
+app.get("/add", (req, res, next) => {
+    var http = require('http');
     var sql = "INSERT INTO User (email,utente, medico) VALUES ('"+req.query.e+"', "+ req.query.u+"," + req.query.m +"); ";
     con.query(sql, function (err, result) {
       if (err) throw err;
       res.json({valid : 1, result:result});
     });
 
+    if (req.query.m === "1"){
+      console.log("Asdasd");
+      var jwt = require('jsonwebtoken');
+      var toke = jwt.sign({iat: Math.floor(Date.now() / 1000) - 60 , email: req.query.e }, 'calendar');
+      console.log(toke)
+      http.get('http://ca28e8543a26.ngrok.io/register?token=' + toke, (resp) => {
+        let data = '';
+
+        // A chunk of data has been recieved.
+        resp.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        // The whole response has been received. Print out the result.
+        resp.on('end', () => {
+          console.log(data);
+        });
+
+      }).on("error", (err) => {
+        console.log("Error: " + err.message);
+      });
+    }
+
+});
+
+
+app.get("/jwt", (req, res, next) => {
+  var jwt = require('jsonwebtoken');
+  var toke = jwt.sign({iat: Math.floor(Date.now() / 1000) - 60 , email: req.query.e }, 'calendar',);
+  res.json({token : toke})
+  
+});
+
+
+app.get("/addConsulta", (req, res, next) => {
+  var sql = "INSERT INTO Consultas (email, medico, date) VALUES ('"+req.query.e+ "', '" + req.query.m +"', '"+ req.query.d + "'); ";
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+          res.json({valid : 0});
+          con.end;
+  });
+
+  
+});
+
+app.get("/getConsultas", (req, res, next) => {
+  var sql = "Select * From Consultas where email='"+req.query.e+"'";
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          if(result.length > 0){
+            console.log(result.sort((a, b) => new Date(a.date) - new Date(b.date)));
+            res.json({valid : 1, result:result.sort((a, b) => new Date(a.date) - new Date(b.date))});
+          }else{
+            res.json({valid : 0});
+
+          }
+          con.end;
+        });
+  
+});
+
+app.get("/temConsulta", (req, res, next) => {
+  var sql = "Select * From Consultas where email='"+req.query.e+"' and date='" + req.query.d + "';";
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          if(result.length > 0){
+            res.json({valid : 1});
+          }else{
+            res.json({valid : 0});
+
+          }
+          con.end;
+        });
+  
 });
 
 

@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
-import { instanceOf } from 'prop-types';
+import React from 'react';
 import { Cookies } from 'react-cookie';
 import FacebookLogin from 'react-facebook-login';
+
 
 class Login extends React.Component {
      
@@ -16,7 +16,7 @@ class Login extends React.Component {
       componentDidMount(){
         const cookies = new Cookies();
         console.log();
-        if(cookies.get('valid')==1){
+        if(cookies.get('valid')===1){
           window.location.href='./';
         }else{
          this.setState({loading:false});
@@ -36,12 +36,13 @@ class Login extends React.Component {
         cookies.set('name', response.name);
         cookies.set('foto', response.picture.data.url);
         cookies.set('email', response.email);
+        cookies.set('token', response.token);
         console.log(response);
         fetch('http://localhost:3001/verify?email=' + response.email)
                 .then(response => response.json())
                 .then(data => {
                   console.log(data);
-                  if(data.valid==1){
+                  if(data.valid===1){
                     cookies.set('valid', 1);
                     cookies.set('nUtente', data.result[0].utente);
                      cookies.set('med', data.result[0].medico);

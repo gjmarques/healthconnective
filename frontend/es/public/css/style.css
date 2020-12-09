@@ -16,8 +16,9 @@ Website: http://Alvarez.is/
 
 /* BASIC THEME CONFIGURATION */
 body {
-    color: #797979;
-	background: #eaeaea;
+    color: #1d1d1d;
+    background: #8b8c9540;;
+    
     font-family: 'Ruda', sans-serif;
     padding: 0px !important;
     margin: 0px !important;
