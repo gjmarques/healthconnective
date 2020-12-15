@@ -47,6 +47,16 @@ func processGet(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+
+
+func processIcs(w http.ResponseWriter, r *http.Request){
+	if r.Method == "GET"{
+		supp.Get_ics(w,r)
+	}else{
+		w.WriteHeader(http.StatusUnauthorized) 
+	}
+}
+
 func processDelete(w http.ResponseWriter, r *http.Request){
 	if r.Method == "GET"{
 		supp.DeleteEntry(w,r)
@@ -72,6 +82,17 @@ func processTestJwt(w http.ResponseWriter, r *http.Request){
 		w.WriteHeader(http.StatusUnauthorized)
 	}
 }
+
+func processTestIcs(w http.ResponseWriter, r *http.Request){
+    if r.Method == "GET"{
+        supp.TestICSFile(w,r)
+        
+        
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+	}
+}
+
 
 func processTestGet(w http.ResponseWriter, r *http.Request){
 	if r.Method == "GET"{
@@ -117,12 +138,14 @@ func main(){
 	http.HandleFunc("/get", processGet)
 	http.HandleFunc("/modify", processModify)
 	http.HandleFunc("/delete", processDelete)
-    http.HandleFunc("/available", processAvailable)
+	http.HandleFunc("/available", processAvailable)
+	http.HandleFunc("/ics", processIcs)
 	http.HandleFunc("/testadd", processTestAdd)
 	http.HandleFunc("/testget", processTestGet)
 	http.HandleFunc("/testdelete", processTestDelete)
 	http.HandleFunc("/testmodify", processAdd)
-    http.HandleFunc("/testjwt", processTestJwt)
+	http.HandleFunc("/testjwt", processTestJwt)
+    http.HandleFunc("/testics", processTestIcs)
 	
 	s := &http.Server{
 		Addr			:	"0.0.0.0:9091",

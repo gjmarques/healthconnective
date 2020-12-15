@@ -15,6 +15,9 @@ import (
     "math/rand"
     "encoding/json"
     "log"
+    "os"
+    "io"
+    "path/filepath"
     //"fmt"
     //"bytes"
     req "../calendar_requests"
@@ -135,6 +138,66 @@ func TestJwt(w http.ResponseWriter, r *http.Request){
         
         
     }
+}
+
+func TestICSFile(w http.ResponseWriter, r *http.Request){
+
+    err := r.ParseForm()
+    
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
+    ics := r.Form.Get("ics")
+
+    log.Println(ics)
+    
+    path, path_err := filepath.Abs("")
+    
+    _ = path_err
+    log.Println(path)
+    file_path := path + "/src/cal_files/xvvv1.ics"
+
+    log.Println(file_path)
+	if _, err := os.Stat(file_path); os.IsNotExist(err) {
+        log.Println("file does not exist")
+        w.WriteHeader(http.StatusNotFound)
+        return
+        
+    }
+
+    //Check if file exists and open
+	Openfile, err := os.Open(file_path)
+	defer Openfile.Close() //Close after function return
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+    
+    //Get the Content-Type of the file
+	//Create a buffer to store the header of the file in
+	FileHeader := make([]byte, 512)
+	//Copy the headers into the FileHeader buffer
+	Openfile.Read(FileHeader)
+	//Get content type of file
+	FileContentType := http.DetectContentType(FileHeader)
+
+	//Get the file size
+	FileStat, _ := Openfile.Stat()                     //Get info from file
+	FileSize := strconv.FormatInt(FileStat.Size(), 10) //Get file size as a string
+
+	//Send the headers
+	w.Header().Set("Content-Disposition", "attachment; filename="+ics + ".ics")
+	w.Header().Set("Content-Type", FileContentType)
+	w.Header().Set("Content-Length", FileSize)
+
+	//Send the file
+	//We read 512 bytes from the file already, so we reset the offset back to 0
+	Openfile.Seek(0, 0)
+	io.Copy(w, Openfile) //'Copy' the file to the client
+	return
+    
+
 }
 
 func IsQueryTermOK(term string) bool{
@@ -437,6 +500,65 @@ func AddUserInfo(w http.ResponseWriter, r *http.Request) bool{
 }
 
 
+func Get_ics(w http.ResponseWriter, r *http.Request){
+
+    err := r.ParseForm()
+    
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+        return
+    }
+    ics := r.Form.Get("ics")
+
+    log.Println(ics)
+    
+    path, path_err := filepath.Abs("")
+    
+    _ = path_err
+    log.Println(path)
+    file_path := path + "/src/cal_files/" +ics + ".ics"
+
+    log.Println(file_path)
+	if _, err := os.Stat(file_path); os.IsNotExist(err) {
+        log.Println("file does not exist")
+        w.WriteHeader(http.StatusNotFound)
+        return
+        
+    }
+
+    //Check if file exists and open
+	Openfile, err := os.Open(file_path)
+	defer Openfile.Close() //Close after function return
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+    
+    //Get the Content-Type of the file
+	//Create a buffer to store the header of the file in
+	FileHeader := make([]byte, 512)
+	//Copy the headers into the FileHeader buffer
+	Openfile.Read(FileHeader)
+	//Get content type of file
+	FileContentType := http.DetectContentType(FileHeader)
+
+	//Get the file size
+	FileStat, _ := Openfile.Stat()                     //Get info from file
+	FileSize := strconv.FormatInt(FileStat.Size(), 10) //Get file size as a string
+
+	//Send the headers
+	w.Header().Set("Content-Disposition", "attachment; filename="+ics + ".ics")
+	w.Header().Set("Content-Type", FileContentType)
+	w.Header().Set("Content-Length", FileSize)
+
+	//Send the file
+	//We read 512 bytes from the file already, so we reset the offset back to 0
+	Openfile.Seek(0, 0)
+	io.Copy(w, Openfile) //'Copy' the file to the client
+	return
+    
+
+}
 func AddEntry(w http.ResponseWriter, r *http.Request) bool{
     db_Pointer, err := OpenConnectionDB()
 

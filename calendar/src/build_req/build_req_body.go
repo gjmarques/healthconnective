@@ -46,6 +46,20 @@ END:VEVENT
 END:VCALENDAR
 `
 
+
+var ics_content = `
+BEGIN:VCALENDAR
+BEGIN:VEVENT
+UID:%s
+DTSTAMP:%s
+DTSTART;%s
+DTEND;%s
+SUMMARY:%s
+END:VEVENT
+END:VCALENDAR
+`
+
+
 var free_busy =`<C:free-busy-query xmlns:C="urn:ietf:params:xml:ns:caldav">
   <C:time-range start="%s"
 				  end="%s"/>
@@ -116,7 +130,7 @@ func Build_PUT(date string, summary string, ics string) (string, string){
     }
     
 	
-	ndate_end := ndate.Add(time.Minute * 30)
+	ndate_end := ndate.Add(time.Minute * 60)
 
 	date_start := ndate.Format(time.RFC3339)
 	date_start = strings.Replace(date_start, "-", "", -1)
@@ -138,6 +152,38 @@ func Build_MKCALENDAR() string{
 	return mkcalendar_content
 }
 
+
+func Build_ICS(date string, summary string, ics string) string{
+
+
+	time_n := time.Now()
+	d_stamp := time_n.Format(time.RFC3339)
+    d_stamp = strings.Replace(d_stamp, "-", "", -1)
+    d_stamp = strings.Replace(d_stamp, ":", "", -1)
+	
+	ndate,err := time.Parse(time.RFC3339,date)
+    
+    if err != nil{
+        log.Println(err)
+    }
+    
+	
+	ndate_end := ndate.Add(time.Minute * 60)
+
+	date_start := ndate.Format(time.RFC3339)
+	date_start = strings.Replace(date_start, "-", "", -1)
+	date_start = strings.Replace(date_start, ":", "", -1)
+	date_end := ndate_end.Format(time.RFC3339)
+	date_end = strings.Replace(date_end, "-", "", -1)
+	date_end = strings.Replace(date_end, ":", "", -1)
+
+	reqBody := fmt.Sprintf(ics_content, ics, d_stamp,date_start, date_end, summary)
+
+	log.Println(reqBody)
+
+
+	return reqBody
+}
 
 
 func generate_uuid() string{

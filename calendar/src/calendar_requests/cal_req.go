@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"encoding/json"
 	"sort"
+	"os"
     //"container/list"
 	build "../build_req"
 )
@@ -50,6 +51,7 @@ type Events struct {
 type Event struct {
 	Summary string
 	Date string
+	Ics string
 }
 
 
@@ -137,6 +139,25 @@ func Put_new_cal(id_user_avail string, date string, summary string, ics string) 
 	}
 	if res.StatusCode == 201{
 		etag = strings.Trim(res.Header["Etag"][0], "\"")
+
+		f, err := os.Create("./../cal_files/" + uuid + ".ics")
+		if err != nil {
+			fmt.Println(err)
+			return "", "", errors.New("")
+		}
+		l, err := f.WriteString(build.Build_ICS(date, summary, ics))
+		if err != nil {
+			fmt.Println(err)
+			f.Close()
+			return "", "", errors.New("")
+		}
+		fmt.Println(l, "ics file created successfully")
+		err = f.Close()
+		if err != nil {
+			fmt.Println(err)
+			return "", "", errors.New("")
+		}
+		
 	}else{
 		return "", "", errors.New("")	
 	}
@@ -233,11 +254,13 @@ func Report_cal(id_user_avail string, date string) (string, error){
 	for _, r := range xml_data.Responses {
 		calData := strings.Split(r.PropS[0].PropE[0].CalendarData, "\n")
 
-
+		
+		ics := strings.Split(calData[4],":")[1]
 		date_ev := strings.Split(calData[5],":")[1]
 		summary := strings.Split(calData[8],":")[1]
 		if strings.EqualFold(strings.Split(date_ev, "T")[0], date) {
-			ev.Events = append(ev.Events, Event{summary, get_date_back(date_ev)})
+			ev.Events = append(ev.Events, Event{summary, get_date_back(date_ev), ics})
+
 		}
 	}   
 
