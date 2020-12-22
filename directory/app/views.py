@@ -15,6 +15,9 @@ from app.models import MedFacility, MedFacilitySerializer
 from rest_framework import status
 from rest_framework.response import Response
 
+def remove_non_alpha(string):
+    return ''.join([ c if c.isalpha() else ' ' for c in string.lower()]).split() 
+
 @csrf_exempt 
 def addMed(request):
     if request.method == "POST":
@@ -36,26 +39,21 @@ def getMed(request):
     if request.method == "GET":
         try:
             response = []
-            request = json.loads(request.body)
-            query_str = request.get('query')
-            tkn = query_str.split()
-            dist = request.get('distance')
-            lat = request.get('location').get('lat')
-            lon = request.get('location').get('lon')
+            dist = request.GET['distance']
+            lat = request.GET['lat']
+            lon = request.GET['lon']
             pnt = GEOSGeometry('POINT({0} {1})'.format(str(lat), str(lon)), srid=4326)   
+            qs = MedFacility.objects.filter(coords__distance_lte=(pnt, D(km=dist)))
             
-            for t in tkn:
-                qs = MedFacility.objects.filter(tokens__icontains=t,coords__distance_lte=(pnt, D(km=dist)))
-            
-                for s in qs:
-                    mf_data = MedFacilitySerializer(s).data
-                    dic = { 'name' : mf_data.get('properties').get('name'),
-                            'address': mf_data.get('properties').get('address'),
-                            'tokens': mf_data.get('properties').get('tokens'),
-                            'location' : {"lat" : mf_data.get('geometry').get('coordinates')[0],
-                                               "lon" : mf_data.get('geometry').get('coordinates')[1] }}
-                    if dic not in response:
-                        response.append(dic)
+            for s in qs:
+                mf_data = MedFacilitySerializer(s).data
+                dic = { 'name' : mf_data.get('properties').get('name'),
+                        'address': mf_data.get('properties').get('address'),
+                        'tokens': mf_data.get('properties').get('tokens'),
+                        'location' : {"lat" : mf_data.get('geometry').get('coordinates')[0],
+                                       "lon" : mf_data.get('geometry').get('coordinates')[1] }}
+                if dic not in response:
+                    response.append(dic)
 
 
 
