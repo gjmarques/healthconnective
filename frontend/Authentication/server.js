@@ -108,6 +108,18 @@ app.get("/addConsulta", (req, res, next) => {
   
 });
 
+
+app.get("/remConsulta", (req, res, next) => {
+  var sql = "Delete from Consultas where email='"+req.query.e+ "'AND date= '" + req.query.d  + "'; ";
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+          res.json({valid : 1});
+          con.end;
+  });
+
+  
+});
+
 app.get("/getConsultas", (req, res, next) => {
   var sql = "Select * From Consultas where email='"+req.query.e+"'";
         con.query(sql, function (err, result) {
@@ -139,5 +151,44 @@ app.get("/temConsulta", (req, res, next) => {
   
 });
 
+app.get("/getUserByEmail", (req, res, next) => {
+  var sql = "Select * From user where email='"+req.query.e+ "';";
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          if(result.length > 0){
+            res.json({valid : 1,  result:result});
+          }else{
+            res.json({valid : 0});
+
+          }
+          con.end;
+        });
+  
+});
+
+
+app.get("/getUserReceitas", (req, res, next) => {
+  var sql = "Select * From Receitas where email='"+req.query.e+ "';";
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          if(result.length > 0){
+            res.json({valid : 1,  result:result});
+          }else{
+            res.json({valid : 0});
+
+          }
+          con.end;
+        });
+  
+});
+
+app.get("/addReceita", (req, res, next) => {
+  var sql = "INSERT INTO Receitas (email, receita, image) VALUES ('"+req.query.e+ "', '" + req.query.r +"', '"+ req.query.i + "'); ";
+  con.query(sql, function (err, result) {
+    if (err) throw err;
+    res.json({valid : 1});
+    con.end;
+  });
+});
 
 app.listen(3001)

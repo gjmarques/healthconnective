@@ -8,12 +8,14 @@ import {
 import Login from './Login';
 import Home from './Home';
 import Farm from './Farm';
-import Consultas from './Consultas';
 import Profile from './Profile';
 import Register from './Register';
 import Home2 from './Home2';
 import MedAva from './medAva';
+import Test from './test';
+import PassarReceitas from './PassarReceita';
 import { Cookies } from 'react-cookie';
+import Receitas from './Receitas';
 
 
 function App() {
@@ -29,9 +31,6 @@ function App() {
           <Route path="/login">
             <Login />
           </Route>
-          <Route path="/consultas">
-            <Consultas />
-          </Route>
           <Route  path="/med">
             <MedAva />
           </Route>
@@ -40,6 +39,16 @@ function App() {
           </Route>
           <Route path="/Register">
             <Register />
+          </Route>
+          <Route path="/PassarReceita">
+            <PassarReceitas  />
+          </Route>
+
+          <Route path="/Receitas">
+            <Receitas  />
+          </Route>
+          <Route path="/test">
+            <Test />
           </Route>
           <Route path="/"  exact>
           {s==='1' ?

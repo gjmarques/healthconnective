@@ -4,6 +4,7 @@ import 'react-calendar/dist/Calendar.css';
 import './App.css';
 import Clock from 'react-live-clock';
 import Popup from 'reactjs-popup';
+import configRest from './config.json';
 
 class MedAva extends React.Component {
      
@@ -61,7 +62,7 @@ class MedAva extends React.Component {
           var d = new URLSearchParams(querystring).get("data");
           console.log("asd" + d)
          
-          fetch('http://d6b588abbd1f.ngrok.io/available?date=' + d)
+          fetch(configRest.Calendar + '/available?date=' + d)
           .then(response => response.json())
           .then(data => {
             console.log(data)
@@ -214,8 +215,7 @@ class MedAva extends React.Component {
                                                               fetch('http://localhost:3001/jwt?e='+ data )
                                                               .then(response => response.json())
                                                               .then(data1 => {
-                                                                console.log(data1)
-                                                                fetch('http://d6b588abbd1f.ngrok.io/add?token='+ data1.token + "&date=" + this.state.date + "&summary=" + this.state.email +"|" + this.state.name +"|" + this.state.numero)
+                                                                fetch(configRest.Calendar + '/add?token='+ data1.token + "&date=" + this.state.date + "&summary=" + this.state.email +"|" + this.state.name +"|" + this.state.numero)
                                                                 .then(response => {
                                                                   if(response.status === 200){
                                                                     fetch('http://localhost:3001/addConsulta?e='+ this.state.email + "&d=" + this.state.date + "&m=" + data )

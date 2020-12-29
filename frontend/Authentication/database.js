@@ -16,7 +16,11 @@ con.connect(function(err) {
     var sql = "CREATE TABLE if not exists Consultas (id int primary key auto_increment, email VARCHAR(255), medico VARCHAR(255), date VARCHAR(255))";
       con.query(sql, function (err, result) {
         if (err) throw err;
-        
+        var sql = "CREATE TABLE if not exists Receitas (id int primary key auto_increment, email VARCHAR(255), receita VARCHAR(255), image VARCHAR(5000))";
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+          
+        });
       });
     con.end;
    });
