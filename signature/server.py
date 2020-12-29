@@ -1,3 +1,7 @@
+import qrcode
+import base64
+from PIL import Image
+from io import BytesIO
 from flask import Flask, request
 from flask_json import FlaskJSON, JsonError, json_response
 from Cryptodome.Signature import PKCS1_v1_5
@@ -20,32 +24,33 @@ def hello_world():
 def sign_data():
     data = request.get_json(force=True)
     try:
-        print('data')
         key = RSA.importKey(open('key.pem').read())
-        print('key')
         h = SHA.new(data=data['prescription'].encode('utf-8'))
-        print('h')
         signer = PKCS1_v1_5.new(key)
-        print('signer')
         signature = signer.sign(h)
-        print('signature')
         string = b64encode(signature).decode('utf-8')
-        print('string')
-    
+        img = qrcode.make(json_response(prescription=data['prescription'], signature=string))
+        img.save("sample.png")
+        with open("sample.png", "rb") as image_file:
+            encoded_string = base64.b64encode(image_file.read())
     except (KeyError, TypeError, ValueError):
         raise JsonError(description='Invalid value.')
-    return json_response(prescription=data['prescription'], signature=string)
+    return encoded_string
 
 
 @app.route("/validate", methods=["POST"])
 def validate_signature():
     data = request.get_json(force=True)
     try:
-        signature = b64decode(data['signature'].encode('utf-8'))
-        key = RSA.importKey(open('cert.pem').read())
-        h = SHA.new(data=data['prescription'].encode('utf-8'))
-        verifier = PKCS1_v1_5.new(key)
+        # signature = b64decode(data['signature'].encode('utf-8'))
+        # key = RSA.importKey(open('cert.pem').read())
+        # h = SHA.new(data=data['prescription'].encode('utf-8'))
+        # verifier = PKCS1_v1_5.new(key)
+
+        im = Image.open(BytesIO(base64.b64decode(data['image'])))
+        im.save('verify.png', 'PNG')
+
 
     except (KeyError, TypeError, ValueError):
         raise JsonError(description='Invalid value.')
-    return json_response(valid=verifier.verify(h, signature))
+    return json_response(valid=True)            # verifier.verify(h, signature))
