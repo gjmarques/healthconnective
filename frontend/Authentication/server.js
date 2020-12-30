@@ -10,11 +10,24 @@ var con = mysql.createConnection({
   });
 
 
+//Create DB if not exists  
 con.connect(function(err) {
+  if (err) throw err;
+  console.log("Connected!");
+  var sql = "CREATE TABLE if not exists User (id int primary key auto_increment, email VARCHAR(255), utente int, medico int)";
+  con.query(sql, function (err, result) {
     if (err) throw err;
-    console.log("Connected to DATABASE!");
+    var sql = "CREATE TABLE if not exists Consultas (id int primary key auto_increment, email VARCHAR(255), medico VARCHAR(255), date VARCHAR(255), downloadid VARCHAR(255))";
+      con.query(sql, function (err, result) {
+        if (err) throw err;
+        var sql = "CREATE TABLE if not exists Receitas (id int primary key auto_increment, email VARCHAR(255), receita VARCHAR(255), image VARCHAR(5000))";
+        con.query(sql, function (err, result) {
+          if (err) throw err;
+        });
+      });
+   });
+  con.end;
 });
-
 
 // Add headers
 app.use(function (req, res, next) {
@@ -53,8 +66,6 @@ app.get("/verify", (req, res, next) => {
 });
 
 
-
-
 app.get("/add", (req, res, next) => {
     var http = require('http');
     var sql = "INSERT INTO User (email,utente, medico) VALUES ('"+req.query.e+"', "+ req.query.u+"," + req.query.m +"); ";
@@ -64,10 +75,8 @@ app.get("/add", (req, res, next) => {
     });
 
     if (req.query.m === "1"){
-      console.log("Asdasd");
       var jwt = require('jsonwebtoken');
       var toke = jwt.sign({iat: Math.floor(Date.now() / 1000) - 60 , email: req.query.e }, 'calendar');
-      console.log(toke)
       http.get('http://ca28e8543a26.ngrok.io/register?token=' + toke, (resp) => {
         let data = '';
 
@@ -78,7 +87,7 @@ app.get("/add", (req, res, next) => {
 
         // The whole response has been received. Print out the result.
         resp.on('end', () => {
-          console.log(data);
+          console.log("");
         });
 
       }).on("error", (err) => {
@@ -98,14 +107,12 @@ app.get("/jwt", (req, res, next) => {
 
 
 app.get("/addConsulta", (req, res, next) => {
-  var sql = "INSERT INTO Consultas (email, medico, date) VALUES ('"+req.query.e+ "', '" + req.query.m +"', '"+ req.query.d + "'); ";
+  var sql = "INSERT INTO Consultas (email, medico, date, downloadid) VALUES ('"+req.query.e+ "', '" + req.query.m +"', '"+ req.query.d +"', '"+ req.query.i + "'); ";
   con.query(sql, function (err, result) {
     if (err) throw err;
           res.json({valid : 0});
           con.end;
   });
-
-  
 });
 
 
@@ -116,8 +123,6 @@ app.get("/remConsulta", (req, res, next) => {
           res.json({valid : 1});
           con.end;
   });
-
-  
 });
 
 app.get("/getConsultas", (req, res, next) => {
@@ -125,15 +130,12 @@ app.get("/getConsultas", (req, res, next) => {
         con.query(sql, function (err, result) {
           if (err) throw err;
           if(result.length > 0){
-            console.log(result.sort((a, b) => new Date(a.date) - new Date(b.date)));
             res.json({valid : 1, result:result.sort((a, b) => new Date(a.date) - new Date(b.date))});
           }else{
             res.json({valid : 0});
-
           }
           con.end;
         });
-  
 });
 
 app.get("/temConsulta", (req, res, next) => {
@@ -144,11 +146,9 @@ app.get("/temConsulta", (req, res, next) => {
             res.json({valid : 1});
           }else{
             res.json({valid : 0});
-
           }
           con.end;
         });
-  
 });
 
 app.get("/getUserByEmail", (req, res, next) => {
@@ -159,11 +159,9 @@ app.get("/getUserByEmail", (req, res, next) => {
             res.json({valid : 1,  result:result});
           }else{
             res.json({valid : 0});
-
           }
           con.end;
         });
-  
 });
 
 
@@ -175,11 +173,9 @@ app.get("/getUserReceitas", (req, res, next) => {
             res.json({valid : 1,  result:result});
           }else{
             res.json({valid : 0});
-
           }
           con.end;
         });
-  
 });
 
 app.get("/addReceita", (req, res, next) => {
@@ -190,5 +186,6 @@ app.get("/addReceita", (req, res, next) => {
     con.end;
   });
 });
+
 
 app.listen(3001)

@@ -216,24 +216,14 @@ class MedAva extends React.Component {
                                                               .then(response => response.json())
                                                               .then(data1 => {
                                                                 fetch(configRest.Calendar + '/add?token='+ data1.token + "&date=" + this.state.date + "&summary=" + this.state.email +"|" + this.state.name +"|" + this.state.numero)
-                                                                .then(response => {
-                                                                  if(response.status === 200){
-                                                                    fetch('http://localhost:3001/addConsulta?e='+ this.state.email + "&d=" + this.state.date + "&m=" + data )
-                                                                    .then(response => response.json())
-                                                                    .then(data => window.location.href="./")
-                                                                  }else{
-                                                                    window.location.href="./"
-                                                                  }
+                                                                .then(response => response.status===200? response.json() :    window.location.href='./')
+                                                                .then(data2 => {
+                                                                  console.log(data2);
+                                                                  fetch('http://localhost:3001/addConsulta?e='+ this.state.email + "&d=" + this.state.date + "&m=" + data + "&i="+  data2.ics)
+                                                                  .then(response => window.location.href='./')
                                                                 })
-                                                           })
-
-
-                                                      }
-                                                                                                            
-                                                          
-
-
-                                                      }><font style={{fontSize : "30pt"}}>Adicionar</font></button>
+                                                          })
+                                                      }}><font style={{fontSize : "30pt"}}>Adicionar</font></button>
                                                       </div>
                                                       <div className="col-md-9" style={{marginLeft:"10px"}}>
                                                        <br></br>

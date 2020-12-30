@@ -304,23 +304,23 @@ class Home2 extends React.Component {
                                 <div className="col-md-12" style={{width:"1000px",backgroundColor:"#d1f4ff"}}>
                                   <div className="row" style={{marginTop:"55px", marginBottom:"55px", marginLeft:"100px"}}>
                                       <div className="col-md-2" style={{marginLeft:"40px"}}>
-                                        <h3>Hora</h3>
+                                        <h3><b>Hora</b></h3>
                                       </div>
                                       <div  className="col-md-1">
-                                      <button style={{backgroundColor:"#30c830ba"}} onClick={this.handleChange2}><font style={{fontSize : "30pt"}}><i className="fa fa-toggle-up"></i></font></button>
+                                      <button style={{backgroundColor:"#2F323A"}} onClick={this.handleChange2}><font style={{fontSize : "30pt"}}><i className="fa fa-plus-square-o" style={{color:"white"}}></i></font></button>
                                       </div>
                                       <div  className="col-md-1">
                                       {this.state.hora < 10 ?
-                                            <h3>0{this.state.hora}:00 </h3>
+                                            <h3><b>0{this.state.hora}:00 </b></h3>
                                             :
-                                            <h3> {this.state.hora}:00 </h3>
+                                            <h3> <b>{this.state.hora}:00 </b></h3>
                                       } 
                                       </div> 
                                       <div  className="col-md-1" >
-                                        <button  style={{marginLeft:"25px", backgroundColor:"rgba(206, 63, 63, 0.73)"}} onClick={this.handleChange3}><font style={{fontSize : "30pt"}}><i className="fa fa-toggle-down"></i></font></button>
+                                        <button  style={{marginLeft:"25px", backgroundColor:"#2F323A"}} onClick={this.handleChange3}><font style={{fontSize : "30pt"}}><i className="fa  fa-minus-square-o" style={{color:"white"}}></i></font></button>
                                       </div>
                                       <div  className="col-md-2">
-                                        <button style={{marginLeft:"45px",backgroundColor:"#30c830ba"}} onClick={this.handleChange4}><font style={{fontSize : "30pt"}}><i className="fa fa-search">Pesquisar</i></font></button>
+                                        <button style={{marginLeft:"45px",backgroundColor:"#2F323A"}} onClick={this.handleChange4}><font style={{fontSize : "30pt", color:"white"}} >Pesquisar</font></button>
                                       </div>
                                   </div>
                                 </div>
@@ -337,6 +337,7 @@ class Home2 extends React.Component {
                                   <th><font style={{fontSize : "30pt"}}>Hora</font></th>
                                   <th><font style={{fontSize : "30pt"}}>Email</font></th>
                                   <th><font style={{fontSize : "30pt"}}>Cancelar</font></th>
+                                  <th><font style={{fontSize : "30pt"}}>Download</font></th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -385,6 +386,7 @@ class Home2 extends React.Component {
                                               </div>
                                         </Popup>
                                     </td>
+                                    <td> <button  onClick={() => window.location.href=configRest.Calendar + "/ics?ics=" + data.downloadid}>Download</button> </td>
                                    </tr>  
                                 )}                            
                               </tbody>
@@ -401,23 +403,23 @@ class Home2 extends React.Component {
                                   <div className="col-md-12" style={{width:"1000px",backgroundColor:"#d1f4ff"}}>
                                     <div className="row" style={{marginTop:"55px", marginBottom:"55px", marginLeft:"100px"}}>
                                         <div className="col-md-2" style={{marginLeft:"40px"}}>
-                                          <h3>Hora</h3>
+                                          <h3><b>Hora</b></h3>
                                         </div>
                                         <div  className="col-md-1">
-                                        <button style={{backgroundColor:"#30c830ba"}} onClick={this.handleChange2}><font style={{fontSize : "30pt"}}><i className="fa fa-toggle-up"></i></font></button>
+                                        <button style={{backgroundColor:"#2F323A"}} onClick={this.handleChange2}><font style={{fontSize : "30pt"}}><i className="fa fa-plus-square-o" style={{color:"white"}}></i></font></button>
                                         </div>
                                         <div  className="col-md-1">
                                         {this.state.hora < 10 ?
-                                              <h3>0{this.state.hora}:00 </h3>
+                                              <h3><b>0{this.state.hora}:00 </b></h3>
                                               :
-                                              <h3> {this.state.hora}:00 </h3>
+                                              <h3><b> {this.state.hora}:00 </b></h3>
                                         } 
                                         </div> 
                                         <div  className="col-md-1" >
-                                        <button  style={{marginLeft:"25px", backgroundColor:"rgba(206, 63, 63, 0.73)"}} onClick={this.handleChange3}><font style={{fontSize : "30pt"}}><i className="fa fa-toggle-down"></i></font></button>
+                                        <button  style={{marginLeft:"25px", backgroundColor:"#2F323A"}} onClick={this.handleChange3}><font style={{fontSize : "30pt"}}><i className="fa fa-minus-square-o" style={{color:"white"}}></i></font></button>
                                         </div>
                                       <div  className="col-md-2">
-                                        <button style={{marginLeft:"45px",backgroundColor:"#30c830ba"}} onClick={this.handleChange4}><font style={{fontSize : "30pt"}}><i className="fa fa-search">Pesquisar</i></font></button>
+                                        <button style={{marginLeft:"45px",backgroundColor:"#2F323A"}} onClick={this.handleChange4}><font style={{fontSize : "30pt", color:"white"}}>Pesquisar</font></button>
                                       </div>
                                     </div>
                                   </div>
