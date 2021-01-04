@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"sort"
 	"os"
+    "path/filepath"
     //"container/list"
 	build "../build_req"
 )
@@ -93,7 +94,7 @@ func Mk_cal(id_user_avail string) bool{
 
 
 
-func Put_new_cal(id_user_avail string, date string, summary string, ics string) (string, string, error){
+func Put_new_cal(id_user_avail string, email string, date string, summary string, ics string) (string, string, error){
 
 	//log.Printf("%s %s %s %s", id_user_avail, date, summary, ics)
 
@@ -139,13 +140,18 @@ func Put_new_cal(id_user_avail string, date string, summary string, ics string) 
 	}
 	if res.StatusCode == 201{
 		etag = strings.Trim(res.Header["Etag"][0], "\"")
+        path, path_err := filepath.Abs("")
+    
+        _ = path_err
+        log.Println(path)
+        file_path := path + "/src/cal_files/"
 
-		f, err := os.Create("./../cal_files/" + uuid + ".ics")
+		f, err := os.Create(file_path + uuid + ".ics")
 		if err != nil {
 			fmt.Println(err)
 			return "", "", errors.New("")
 		}
-		l, err := f.WriteString(build.Build_ICS(date, summary, ics))
+		l, err := f.WriteString(build.Build_ICS(email,date, summary, ics))
 		if err != nil {
 			fmt.Println(err)
 			f.Close()

@@ -47,14 +47,43 @@ END:VCALENDAR
 `
 
 
-var ics_content = `
-BEGIN:VCALENDAR
+var ics_content = `BEGIN:VCALENDAR
+METHOD:REQUEST
+VERSION:2.0
+BEGIN:VTIMEZONE
+TZID:GMT Standard Time
+BEGIN:STANDARD
+DTSTART:16010101T020000
+TZOFFSETFROM:+0100
+TZOFFSETTO:+0000
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=-1SU;BYMONTH=10
+END:STANDARD
+BEGIN:DAYLIGHT
+DTSTART:16010101T010000
+TZOFFSETFROM:+0000
+TZOFFSETTO:+0100
+RRULE:FREQ=YEARLY;INTERVAL=1;BYDAY=-1SU;BYMONTH=3
+END:DAYLIGHT
+END:VTIMEZONE
 BEGIN:VEVENT
+ORGANIZER;CN=Medico:mailto:%s
+DESCRIPTION;LANGUAGE=pt-PT:\n
 UID:%s
+SUMMARY;LANGUAGE=pt-PT:%s
+DTSTART;TZID=GMT Standard Time:%s
+DTEND;TZID=GMT Standard Time:%s
+CLASS:PUBLIC
+PRIORITY:5
 DTSTAMP:%s
-DTSTART;%s
-DTEND;%s
-SUMMARY:%s
+TRANSP:OPAQUE
+STATUS:CONFIRMED
+SEQUENCE:0
+LOCATION;LANGUAGE=pt-PT:
+BEGIN:VALARM
+DESCRIPTION:REMINDER
+TRIGGER;RELATED=START:-PT15M
+ACTION:DISPLAY
+END:VALARM
 END:VEVENT
 END:VCALENDAR
 `
@@ -153,7 +182,7 @@ func Build_MKCALENDAR() string{
 }
 
 
-func Build_ICS(date string, summary string, ics string) string{
+func Build_ICS(mail string, date string, summary string, ics string) string{
 
 
 	time_n := time.Now()
@@ -177,7 +206,7 @@ func Build_ICS(date string, summary string, ics string) string{
 	date_end = strings.Replace(date_end, "-", "", -1)
 	date_end = strings.Replace(date_end, ":", "", -1)
 
-	reqBody := fmt.Sprintf(ics_content, ics, d_stamp,date_start, date_end, summary)
+	reqBody := fmt.Sprintf(ics_content, mail, ics, summary,date_start, date_end,  d_stamp)
 
 	log.Println(reqBody)
 

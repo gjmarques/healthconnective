@@ -24,7 +24,7 @@ import (
 
 )
 const (  
-    db_address = "root:es2020@tcp(localhost:9094)/CalendarUsers"
+    db_address = "root:es2020@tcp(db:3306)/CalendarUsers"
 )
 
 var re, regexerr = regexp.Compile("[^A-Za-z@._0-9 ]+")    
@@ -405,6 +405,8 @@ func hasConflitAll(date string, db_Pointer *sql.DB) []string{
 func IsAvailable(w http.ResponseWriter, r *http.Request){
     db_Pointer, err := OpenConnectionDB()
     if err != nil {
+
+        log.Println(err)
         w.Header().Set("Content-Type", "application/json")
         w.WriteHeader(http.StatusInternalServerError)
         w.Write([]byte(`{"error": "Could not access database"}`))
@@ -415,6 +417,7 @@ func IsAvailable(w http.ResponseWriter, r *http.Request){
         if err != nil {
             w.WriteHeader(http.StatusBadRequest)
             CloseConnectionDB(db_Pointer)
+            log.Println(err)
             return 
         }
         
@@ -425,6 +428,7 @@ func IsAvailable(w http.ResponseWriter, r *http.Request){
         
         json_emails, err_json := json.Marshal(not_conflit)
 
+        log.Println(json_emails)
         _ = err_json
         w.WriteHeader(http.StatusOK)
         w.Write([]byte(string(json_emails)))
@@ -604,7 +608,22 @@ func AddEntry(w http.ResponseWriter, r *http.Request) bool{
         
         id_user_avail := isUserinDatabase(email, db_Pointer)
         summary := r.Form.Get("summary")
+        
+        tn:= time.Now()
+        
         date := r.Form.Get("date")
+        
+        ndate,err := time.Parse(time.RFC3339,date)
+        
+        if !ndate.After(tn) {
+            CloseConnectionDB(db_Pointer)
+            w.WriteHeader(http.StatusBadRequest)
+            log.Println("AddEntry - Date not after present date")
+            return false
+            
+        }
+    
+        
         
         if strings.EqualFold(id_user_avail,"-1") {
             
@@ -656,7 +675,7 @@ func AddEntry(w http.ResponseWriter, r *http.Request) bool{
         }
 
         //add entry to calendar  
-        uuid, etag, err_put := req.Put_new_cal(id_user_avail, date, summary, "")
+        uuid, etag, err_put := req.Put_new_cal(id_user_avail, email, date, summary, "")
         if err_put != nil{
             log.Println(err_put)
             CloseConnectionDB(db_Pointer)
@@ -678,6 +697,7 @@ func AddEntry(w http.ResponseWriter, r *http.Request) bool{
         }
 
         w.WriteHeader(http.StatusOK)
+        w.Write([]byte(`{ "ics" : "` + uuid +  `"}`))
         return true
 
     }
@@ -739,7 +759,7 @@ func ModifyEntry(w http.ResponseWriter, r *http.Request){
 
         //log.Printf("%s %s %s", id_user, ics, etag_old)
 
-        ics_new, etag_new, err_modify := req.Put_new_cal(id_user, new_date, summary, ics)
+        ics_new, etag_new, err_modify := req.Put_new_cal(id_user, email, new_date, summary, ics)
         
 
 
