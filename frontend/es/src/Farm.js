@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import './App.css';
 import { Icon, map } from "leaflet";
 import Clock from 'react-live-clock';
+import configRest from './config.json';
 
 
 export const icon = new Icon({
@@ -61,11 +62,31 @@ class Farm extends React.Component {
       componentDidMount(){
 
         const script = document.createElement('script');
+        const script2 = document.createElement('script');
+        const script3 = document.createElement('script');
 
         script.src = "lib/common-scripts.js";
         script.async = true;
-
         document.body.appendChild(script);
+
+
+        script2.src = "lib/fullcalendar/fullcalendar.min.js";
+        script2.async = true;
+        document.body.appendChild(script2);
+        
+
+        script3.src = "lib/calendar-conf-events.js";
+        script3.async = true;
+        document.body.appendChild(script3);
+
+
+   
+        script3.src = "lib/jquery/jquery.min.js";
+        script3.async = true;
+        document.body.appendChild(script3);
+
+
+
 
         
         const cookies = new Cookies();
@@ -77,7 +98,7 @@ class Farm extends React.Component {
             
             navigator.geolocation.getCurrentPosition((position) => {
                 this.setState({lat: position.coords.latitude, long: position.coords.longitude});
-             fetch('http://e75d9c91df8d.ngrok.io/get?distance=30&lat='+position.coords.latitude + '&lon=' + position.coords.longitude)
+             fetch(configRest.Directory+ '/get?distance=30000&lat='+position.coords.latitude + '&lon=' + position.coords.longitude)
                 .then(response => response.json())
                 .then((data) => {
                     var sfarmdata = []

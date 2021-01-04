@@ -16,3 +16,17 @@
 
   background-color: rgb(255, 255, 255);
 }
+
+.btnFacebook { 
+  width: 265px;
+  height:55px;  
+  border-radius: 4px;
+  background: #4ECDC4;
+  color:white;
+  border:0px transparent;  
+  margin-top: 10px;
+  margin-left: -5px;
+  font-size: 17pt;
+  text-align: center;
+  display: inline-block;
+}
