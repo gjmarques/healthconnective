@@ -2,6 +2,7 @@ const express = require("express");
 const socket = require("socket.io");
 const app = express();
 
+
 //Starts the server
 let server = app.listen(8008, function () {
   console.log("Server is running");
@@ -9,17 +10,29 @@ let server = app.listen(8008, function () {
 
 app.use(express.static(__dirname+"/public"));
 
-//Upgrades the server to accept websockets.
+// Add headers 
+app.use(function (req, res, next) { 
+    // Website you wish to allow to connect 
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    // res.setHeader('Access-Control-Allow-Origin', 'http://0087da302097.ngrok.io'); 
+    // Request methods you wish to allow 
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE'); 
+    // Request headers you wish to allow 
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type'); 
+    // Set to true if you need the website to include cookies in the requests sent 
+    // to the API (e.g. in case you use sessions) 
+    res.setHeader('Access-Control-Allow-Credentials', true); 
+    // Pass to next layer of middleware next(); 
+}); 
 
+//Upgrades the server to accept websockets.
 let io = socket(server);
 
 //Triggered when a client is connected.
-
 io.on("connection", function (socket) {
   console.log("User Connected :" + socket.id);
 
   //Triggered when a peer hits the join room button.
-
   socket.on("join", function (roomName) {
     let rooms = io.sockets.adapter.rooms;
     let room = rooms.get(roomName);
@@ -45,20 +58,17 @@ io.on("connection", function (socket) {
   });
 
   //Triggered when server gets an icecandidate from a peer in the room.
-
   socket.on("candidate", function (candidate, roomName) {
     console.log(candidate);
     socket.broadcast.to(roomName).emit("candidate", candidate); //Sends Candidate to the other peer in the room.
   });
 
   //Triggered when server gets an offer from a peer in the room.
-
   socket.on("offer", function (offer, roomName) {
     socket.broadcast.to(roomName).emit("offer", offer); //Sends Offer to the other peer in the room.
   });
 
   //Triggered when server gets an answer from a peer in the room.
-
   socket.on("answer", function (answer, roomName) {
     socket.broadcast.to(roomName).emit("answer", answer); //Sends Answer to the other peer in the room.
   });

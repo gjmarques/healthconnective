@@ -5,11 +5,10 @@ let joinButton = document.getElementById("join");
 let userVideo = document.getElementById("user-video");
 let peerVideo = document.getElementById("peer-video");
 let roomInput = document.getElementById("roomName");
-let roomName;
 let creator = false;
 let rtcPeerConnection;
 let userStream;
-
+roomInput = new URL(window.location.href).searchParams.get("id")
 // Contains the stun server URL we will be using.
 let iceServers = {
   iceServers: [
@@ -18,14 +17,15 @@ let iceServers = {
   ],
 };
 
-joinButton.addEventListener("click", function () {
+
+//joinButton.addEventListener("click", function () {
   if (roomInput.value == "") {
     alert("Please enter a room name");
   } else {
     roomName = roomInput.value;
     socket.emit("join", roomName);
   }
-});
+//});
 
 // Triggered when a room is succesfully created.
 
