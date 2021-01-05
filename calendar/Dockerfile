@@ -13,4 +13,6 @@ RUN go get -u github.com/dgrijalva/jwt-go
 
 RUN go build src/start_server.go
 
+EXPOSE 9091
+
 CMD ["./start_server"]
