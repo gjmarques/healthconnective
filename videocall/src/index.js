@@ -1,36 +1,65 @@
-const express = require('express')
-const http = require('http')
-const app = express()
+const express = require("express");
+const socket = require("socket.io");
+const app = express();
 
-const server = http.createServer(app)
-const io = require('socket.io')(server)
+//Starts the server
+let server = app.listen(8008, function () {
+  console.log("Server is running");
+});
 
-const port = 8008
+app.use(express.static(__dirname+"/public"));
 
-app.use(express.static(__dirname+'/public'))
-io.sockets.on('error', e => console.log(e))
-server.listen(port, () => console.log('Server is up'))
+//Upgrades the server to accept websockets.
 
-let broadcast
+let io = socket(server);
 
-io.sockets.on('connection', socket => {
-    socket.on('broadcaster', () => {
-        broadcast = socket.id;
-        socket.broadcast.emit('broadcaster')
-    })
-    socket.on('watcher', () => {
-        socket.to(broadcast).emit('watcher', socket.id)
-    })
-    socket.on('disconnect', () => {
-        socket.to(broadcast).emit('disconnectPeer', socket.id)
-    })
-    socket.on("offer", (id, message) => {
-        socket.to(id).emit("offer", socket.id, message);
-    });
-    socket.on("answer", (id, message) => {
-      socket.to(id).emit("answer", socket.id, message);
-    });
-    socket.on("candidate", (id, message) => {
-      socket.to(id).emit("candidate", socket.id, message);
-    });
-})
+//Triggered when a client is connected.
+
+io.on("connection", function (socket) {
+  console.log("User Connected :" + socket.id);
+
+  //Triggered when a peer hits the join room button.
+
+  socket.on("join", function (roomName) {
+    let rooms = io.sockets.adapter.rooms;
+    let room = rooms.get(roomName);
+
+    //room == undefined when no such room exists.
+    if (room == undefined) {
+      socket.join(roomName);
+      socket.emit("created");
+    } else if (room.size == 1) {
+      //room.size == 1 when one person is inside the room.
+      socket.join(roomName);
+      socket.emit("joined");
+    } else {
+      //when there are already two people inside the room.
+      socket.emit("full");
+    }
+    console.log(rooms);
+  });
+
+  //Triggered when the person who joined the room is ready to communicate.
+  socket.on("ready", function (roomName) {
+    socket.broadcast.to(roomName).emit("ready"); //Informs the other peer in the room.
+  });
+
+  //Triggered when server gets an icecandidate from a peer in the room.
+
+  socket.on("candidate", function (candidate, roomName) {
+    console.log(candidate);
+    socket.broadcast.to(roomName).emit("candidate", candidate); //Sends Candidate to the other peer in the room.
+  });
+
+  //Triggered when server gets an offer from a peer in the room.
+
+  socket.on("offer", function (offer, roomName) {
+    socket.broadcast.to(roomName).emit("offer", offer); //Sends Offer to the other peer in the room.
+  });
+
+  //Triggered when server gets an answer from a peer in the room.
+
+  socket.on("answer", function (answer, roomName) {
+    socket.broadcast.to(roomName).emit("answer", answer); //Sends Answer to the other peer in the room.
+  });
+});
