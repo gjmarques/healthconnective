@@ -1,5 +1,6 @@
 import React from 'react';
 import { Cookies } from 'react-cookie';
+import configRest from './config.json';
 
 class Register extends React.Component {
      
@@ -43,7 +44,7 @@ class Register extends React.Component {
 
       handleSubmit(event) {
         const cookies = new Cookies();
-        fetch('http://localhost:3001/add?e=' + this.state.email + "&u=" + this.state.nUtente + "&m=" + this.state.med)
+        fetch(configRest.autenticacao + '/add?e=' + this.state.email + "&u=" + this.state.nUtente + "&m=" + this.state.med)
         .then(response => response.json())
         .then(data => {
           console.log(data);

@@ -33,7 +33,7 @@ con.connect(function(err) {
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', '*');
 
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -67,7 +67,7 @@ app.get("/verify", (req, res, next) => {
 
 
 app.get("/add", (req, res, next) => {
-    var http = require('http');
+    var http = require('https');
     var sql = "INSERT INTO User (email,utente, medico) VALUES ('"+req.query.e+"', "+ req.query.u+"," + req.query.m +"); ";
     con.query(sql, function (err, result) {
       if (err) throw err;
@@ -77,7 +77,7 @@ app.get("/add", (req, res, next) => {
     if (req.query.m === "1"){
       var jwt = require('jsonwebtoken');
       var toke = jwt.sign({iat: Math.floor(Date.now() / 1000) - 60 , email: req.query.e }, 'calendar');
-      http.get('http://ca28e8543a26.ngrok.io/register?token=' + toke, (resp) => {
+      http.get('https://2a819c504f32.ngrok.io/register?token=' + toke, (resp) => {
         let data = '';
 
         // A chunk of data has been recieved.

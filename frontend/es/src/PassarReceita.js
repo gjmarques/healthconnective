@@ -78,7 +78,7 @@ class PassarReceitas extends React.Component {
 
     handleChange(event) { 
         this.setState({loading:true})
-        fetch('http://localhost:3001/getUserByEmail?e='+this.state.Emailvalue.replace(/\s/g, '') )
+        fetch(configRest.autenticacao + '/getUserByEmail?e='+this.state.Emailvalue.replace(/\s/g, '') )
         .then(response => response.json())
         .then(data1 => {
             if(data1.valid==1){
@@ -95,7 +95,7 @@ class PassarReceitas extends React.Component {
         fetch(configRest.QRCode+"/sign?prescription=" + s)
         .then(response => response.json())
         .then(data1 => {   
-            fetch('http://localhost:3001/addReceita?e='+this.state.Emailvalue.replace(/\s/g, '') + "&r=" + s + "&i=" + data1.base64)
+            fetch(configRest.autenticacao + '/addReceita?e='+this.state.Emailvalue.replace(/\s/g, '') + "&r=" + s + "&i=" + data1.base64)
             .then(response => response.json())
             .then(data => {  
                 window.location.href='./';
@@ -175,22 +175,22 @@ class PassarReceitas extends React.Component {
                           <h5 class="centered">{this.state.name}</h5>
                           <li class="mt">
                               <a  href="/">
-                              <i class="fa fa-home"></i>
+                              <i class="fa fa-calendar-o"></i>
                               <span>Home</span>
                               </a>
                           </li>
                         
                           <li class="mt">
                               <a href="/Farm">
-                              <i class="fa fa-medkit"></i>
-                              <span>Nas Próximidades</span>
+                              <i class="fa fa-map-marker"></i>
+                              <span>Nearby</span>
                               </a>
                           </li>
 
                           <li class="mt">
-                              <a class="active dcjq-parent" href="/PassarReceita">
+                              <a class="active dcjq-parent" href="/Receitas">
                               <i class="fa fa-medkit"></i>
-                              <span>Receita</span>
+                              <span>Prescriptions</span>
                               </a>
                           </li>
                       
@@ -206,6 +206,8 @@ class PassarReceitas extends React.Component {
 
            
                 <section id="main-content">
+                <section class="wrapper">
+                <h3><i class="fa fa-angle-right"></i>New Prescription</h3>
                     <div class="container">
                     <br/>
                     <br/>
@@ -222,14 +224,13 @@ class PassarReceitas extends React.Component {
                         {this.state.loading ? 
                             <h2 style={{marginLeft:"10px"}}>Loading....</h2>
                         :
-                            this.state.valid==0 ? 
+                            this.state.valid==0 || this.state.data[0].medico==1? 
                                  <h2 style={{marginLeft:"10px"}}>Search a valid email</h2>
 
                             :
 
 
                                 <div>
-                                     {this.state.data[0].medico==1? <div style={{marginLeft:"30px"}}><h2>This user is a medic!!!!</h2> <br></br></div>: <h2></h2>}
                                 <h2 style={{marginLeft:"10px"}}>Email: {this.state.data[0].email}</h2>
                                 <h2 style={{marginLeft:"10px"}}>NºUtente: {this.state.data[0].utente}</h2>
                                 <br/>
@@ -277,6 +278,7 @@ class PassarReceitas extends React.Component {
                            
                         </div>
                     </div>
+                </section>
                 </section>
                 </div>
             );

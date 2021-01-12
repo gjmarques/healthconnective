@@ -1,6 +1,6 @@
 import React from 'react';
 import { Cookies } from 'react-cookie';
-
+import Clock from 'react-live-clock';
 
 class Profile extends React.Component {
      
@@ -57,7 +57,7 @@ class Profile extends React.Component {
                                     
                     <header class="header black-bg">
                     <div class="sidebar-toggle-box">
-                        <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
+                        <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation" style={{color:"white"}}></div>
                     </div>
 
                     <a href="/" class="logo"><b>Health<span>Connect</span></b></a>
@@ -68,39 +68,46 @@ class Profile extends React.Component {
                         <li><a class="logout" onClick={this.Logout}>Logout</a></li>
                         </ul>
                         <ul class="nav pull-right top-menu">
-                        <li><a class="logout" style={{backgroundColor:'#99ccff'}} href="/login"> <i class="fa fa-user"></i>  Profile</a></li>
+                        <li><a class="logout" style={{backgroundColor:'#22242A'}} href="/profile"> <i class="fa fa-user"></i>  Profile</a></li>
                         </ul>
                     </div>
                     </header>
                       <aside>
                     <div id="sidebar" class="nav-collapse ">
-               
+              
                         <ul class="sidebar-menu" id="nav-accordion">
-                        <p class="centered"><a href="profile.html"><img src={this.state.foto} class="img-circle" width="80"/></a><div></div></p>
+                        <div style={{color:"white", textAlign:"center"}}>
+                            <h3 style={{color:"white", alignContent:"center"}}>
+                              <Clock format="HH:mm" interval={1000} ticking={true}  />
+                            </h3> 
+                           <br></br>
+                          </div>
+                      
+                        
+                        <p class="centered"><a href="/profile"><img src={this.state.foto} class="img-circle" width="80"/></a><div></div></p>
                         
                          <h5 class="centered">{this.state.name}</h5>
-                        <li class="mt">
-                            <a class="dcjq-parent" href="/">
-                            <i class="fa fa-home"></i>
-                            <span>Home</span>
-                            </a>
-                        </li>
-                        <li class="mt">
-                            <a href="/consultas">
-                            <i class="fa fa-plus-square"></i>
-                            <span>Consultas</span>
-                            </a>
-                        </li>
-                        <li class="mt">
-                            <a href="/Farm">
-                            <i class="fa fa-medkit"></i>
-                            <span>Postos Farmaceuticos</span>
-                            </a>
-                        </li>
-                        <li class="mt">
-                           <br/>
-                           <br/>
-                        </li>
+                        <li className="mt">
+                              <a  href="/">
+                              <i className="fa fa-calendar-o"></i>
+                              <span>Home</span>
+                              </a>
+                          </li>
+                        
+                          <li className="mt">
+                              <a href="/Farm">
+                              <i className="fa fa-map-marker"></i>
+                              <span>Nearby</span>
+                              </a>
+                          </li>
+
+                          <li className="mt">
+                              <a href="/Receitas">
+                              <i className="fa fa-medkit"></i>
+                              <span>Prescriptions</span>
+                              </a>
+                          </li>
+
                              
                         </ul>
 
@@ -126,11 +133,9 @@ class Profile extends React.Component {
                 <ul class="nav nav-tabs nav-justified">
                 
                 <li class="active">
-                    <a data-toggle="tab" href="#contact" class="contact-map" aria-expanded="true">Informação Pessoal</a>
+                    <a data-toggle="tab" href="#contact" class="contact-map" aria-expanded="true">Personal information</a>
                 </li>
-                <li class="">
-                    <a data-toggle="tab" href="#edit" aria-expanded="false">Editar </a>
-                </li>
+  
                 </ul>
             </div>
          
@@ -139,39 +144,16 @@ class Profile extends React.Component {
                   <div id="contact" class="tab-pane active">
                     <div class="row">
                     <div class="col-lg-8 col-lg-offset-2 detailed">
-                        <h4  class="mb">Informação Pessoal</h4>
+                        <h4  class="mb">Personal informationl</h4>
                         <div class="col-lg-8 col-lg-offset-2 detailed">
                           <h3>
-                          <font style={{ color: '#48CFAD', fontWeight: 'bold' }}>Nome: </font> {this.state.name}<br/> <br/><font style={{ color: '#48CFAD',  fontWeight: 'bold' }}>Email: </font> {this.state.email} <br/><br/> <font style={{ color: '#48CFAD',  fontWeight: 'bold' }}>Nº Utente: </font> {this.state.nutente} <br/> 
+                          <font style={{ color: '#48CFAD', fontWeight: 'bold' }}>Name: </font> {this.state.name}<br/> <br/><font style={{ color: '#48CFAD',  fontWeight: 'bold' }}>Email: </font> {this.state.email} <br/><br/> <font style={{ color: '#48CFAD',  fontWeight: 'bold' }}>Nº Utente: </font> {this.state.nutente} <br/> 
                           </h3>
                         </div>
                       </div>        
                     </div>
                   </div>
-                  <div id="edit" class="tab-pane">
-                    <div class="row">   
-                      <div class="col-lg-8 col-lg-offset-2 detailed">
-                        <h4 class="mb">Editar</h4>
-                        <form role="form" class="form-horizontal">
-                          <div class="form-group">
-                            <label class="col-lg-2 control-label">Nº Utente</label>
-                            <div class="col-lg-6">
-                            <input type="text" placeholder=" " id="country" class="form-control"/>
-                            </div>
-                          </div>
-                        </form>
-                      </div>
-                      <div class="col-lg-8 col-lg-offset-2 detailed mt">        
-                          <div class="form-group">
-                            <div class="col-lg-offset-2 col-lg-6">
-                              <button class="btn btn-theme" type="submit">Save</button>
-                             
-                            </div>
-                          </div>
 
-                      </div>
-                    </div>
-                  </div>
          
                 </div>
      

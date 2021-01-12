@@ -57,7 +57,7 @@ class Receitas extends React.Component {
         if(cookies.get('valid')!=1){
           window.location.href='./login';
         }else{
-          fetch('http://localhost:3001/getUserReceitas?e='+ cookies.get('email') )
+          fetch(configRest.autenticacao + '/getUserReceitas?e='+ cookies.get('email') )
             .then(response => response.json())
             .then(data1 => {
                 if(data1.valid==1){
@@ -121,22 +121,22 @@ class Receitas extends React.Component {
                           <h5 class="centered">{this.state.name}</h5>
                           <li class="mt">
                               <a  href="/">
-                              <i class="fa fa-home"></i>
+                              <i class="fa fa-calendar-o"></i>
                               <span>Home</span>
                               </a>
                           </li>
                         
                           <li class="mt">
                               <a href="/Farm">
-                              <i class="fa fa-medkit"></i>
-                              <span>Nas Próximidades</span>
+                              <i class="fa fa-map-marker"></i>
+                              <span>Nearby</span>
                               </a>
                           </li>
 
                           <li class="mt">
-                              <a class="active dcjq-parent" href="/Farm">
+                              <a class="active dcjq-parent" href="/Receitas">
                               <i class="fa fa-medkit"></i>
-                              <span>Receitas</span>
+                              <span>Prescriptions</span>
                               </a>
                           </li>
                       
@@ -152,6 +152,8 @@ class Receitas extends React.Component {
 
            
                 <section id="main-content">
+                <section class="wrapper">
+                <h3><i class="fa fa-angle-right"></i> Prescriptions</h3>
                 <div class="container">
                     <br></br>  <br></br>  <br></br> 
                 <div class="row mt mb">
@@ -162,7 +164,7 @@ class Receitas extends React.Component {
                        
                             <div class="col-lg-4 col-md-4 col-sm-12" style={{marginTop:"20px"}} onClick={ ()=> window.location.href="data:image/png;base64," + d.image.replace(/\s/g, '+')}>
                             <div class="dmbox" style={{ height:"400px",  boxShadow:"1px 4px 4px 3px #aab2bd"}} >
-                            <h2>Medicin</h2>
+                            <h2>Prescription</h2>
                             {d.receita.split(",").map(
                                 (g) => <h3 style={{fontSize:"20pt"}}>- {g}</h3>
                             )}
@@ -175,6 +177,7 @@ class Receitas extends React.Component {
                     )}
              </div>
                 </div>
+                </section>
                 </section>
                 </div>
             );

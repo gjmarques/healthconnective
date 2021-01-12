@@ -95,9 +95,9 @@ class Farm extends React.Component {
         if(cookies.get('valid')!=1){
           window.location.href='./login';
         }else{
-            
-            navigator.geolocation.getCurrentPosition((position) => {
+             navigator.geolocation.getCurrentPosition((position) => {
                 this.setState({lat: position.coords.latitude, long: position.coords.longitude});
+                
              fetch(configRest.Directory+ '/get?distance=30000&lat='+position.coords.latitude + '&lon=' + position.coords.longitude)
                 .then(response => response.json())
                 .then((data) => {
@@ -105,6 +105,8 @@ class Farm extends React.Component {
                     var sdentdata = []
                     var sfisiodata = []
                     var shospdata = []
+                    console.log(configRest.Directory+ '/get?distance=30000&lat='+position.coords.latitude + '&lon=' + position.coords.longitude);
+          
                     data.map( (d) => {
                        
                         d.tokens.map((s)=>{
@@ -205,19 +207,26 @@ class Farm extends React.Component {
                         <p class="centered"><a href="profile.html"><img src={this.state.foto} class="img-circle" width="80"/></a><div></div></p>
                         
                          <h5 class="centered">{this.state.name}</h5>
-                        <li class="mt">
-                            <a href="/">
-                            <i class="fa fa-home"></i>
-                            <span>Home</span>
-                            </a>
-                        </li>
+                         <li class="mt">
+                              <a  href="/">
+                              <i class="fa fa-calendar-o"></i>
+                              <span>Home</span>
+                              </a>
+                          </li>
                         
-                        <li class="mt">
-                            <a class="active dcjq-parent" href="/">
-                            <i class="fa fa-medkit"></i>
-                            <span>Nas Próximidades</span>
-                            </a>
-                        </li>
+                          <li class="mt">
+                              <a class="active dcjq-parent"  href="/Farm">
+                              <i class="fa fa-map-marker"></i>
+                              <span>Nearby</span>
+                              </a>
+                          </li>
+
+                          <li class="mt">
+                          <a href="/Receitas">
+                              <i class="fa fa-medkit"></i>
+                              <span>Prescriptions</span>
+                              </a>
+                          </li>
                         <li class="mt">
                         <br/>
                         <br/>
@@ -246,7 +255,7 @@ class Farm extends React.Component {
                
                 <section id="main-content">
                 <section class="wrapper site-min-height">
-                    <h3><i class="fa fa-angle-right"></i> Nas Próximidades</h3>
+                    <h3><i class="fa fa-angle-right"></i> Nearby</h3>
                     <div class="row mt">
                     <div class="col-lg-12">
                     <div class="row">
@@ -342,10 +351,10 @@ class Farm extends React.Component {
                         
                         <div class="product-panel-2 pn">
                         <br/>
-                        <h1 class="mt"><a >Ocultar</a></h1>
-                        <h4> <span class="check"><input type="checkbox" class="checked" onChange={this.handleChange} /></span>  <font style={{ color: '#6991FD', fontWeight: 'bold' }}>Farmacias</font></h4>
-                        <h4> <span class="check"><input type="checkbox" class="checked" onChange={this.handleChange2} /></span>  <font style={{ color: '#FDF569', fontWeight: 'bold' }}>Dentista</font></h4>
-                        <h4> <span class="check"><input type="checkbox" class="checked" onChange={this.handleChange3} /></span>  <font style={{ color: '#956CFF', fontWeight: 'bold' }}>Fisioterapeuta</font></h4>
+                        <h1 class="mt"><a >Hide</a></h1>
+                        <h4> <span class="check"><input type="checkbox" class="checked" onChange={this.handleChange} /></span>  <font style={{ color: '#6991FD', fontWeight: 'bold' }}>Pharmacies</font></h4>
+                        <h4> <span class="check"><input type="checkbox" class="checked" onChange={this.handleChange2} /></span>  <font style={{ color: '#FDF569', fontWeight: 'bold' }}>Dentist</font></h4>
+                        <h4> <span class="check"><input type="checkbox" class="checked" onChange={this.handleChange3} /></span>  <font style={{ color: '#956CFF', fontWeight: 'bold' }}>Physiotherapist</font></h4>
                         <h4> <span class="check"><input type="checkbox" class="checked" onChange={this.handleChange4} /></span>  <font style={{ color: '#f73838', fontWeight: 'bold' }}>Hospital</font></h4>
                         
                         

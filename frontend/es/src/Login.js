@@ -2,6 +2,7 @@ import React from 'react';
 import { Cookies } from 'react-cookie';
 import FacebookLogin from 'react-facebook-login';
 import './App.css';
+import configRest from './config.json';
 
 class Login extends React.Component {
      
@@ -15,7 +16,7 @@ class Login extends React.Component {
 
       componentDidMount(){
         const cookies = new Cookies();
-       
+        console.log(cookies.get('valid'));
         if(cookies.get('valid')==1){
           window.location.href='./';
         }else{
@@ -23,22 +24,16 @@ class Login extends React.Component {
         }
       }
 
-      Login = e => {
-        const cookies = new Cookies();
-        cookies.set('name', 'joao');
-        window.location.href='./';
+      responseFacebook2 = (response) => {
       }
-
-    
-    render() {
-      const responseFacebook = (response) => {
+       responseFacebook = (response) => {
         const cookies = new Cookies();
         cookies.set('name', response.name);
         cookies.set('foto', response.picture.data.url);
         cookies.set('email', response.email);
         cookies.set('token', response.token);
         console.log(response);
-        fetch('http://localhost:3001/verify?email=' + response.email)
+        fetch(configRest.autenticacao + '/verify?email=' + response.email)
                 .then(response => response.json())
                 .then(data => {
                   console.log(data);
@@ -52,6 +47,9 @@ class Login extends React.Component {
                   }
                 }); 
       }
+    
+    render() {
+     
         if(this.state.loading){
           return (<h1>loading......</h1>)
         }else{
@@ -91,7 +89,7 @@ class Login extends React.Component {
                             appId="861638111331940"
                             autoLoad={true}
                             fields="name,email,picture"
-                            callback={responseFacebook}
+                            callback={this.responseFacebook}
                             cssClass="btnFacebook"
                           />
                       <hr/>

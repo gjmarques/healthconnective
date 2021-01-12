@@ -16,7 +16,7 @@ import Test from './test';
 import PassarReceitas from './PassarReceita';
 import { Cookies } from 'react-cookie';
 import Receitas from './Receitas';
-
+import Chat_room from './Chat_room';
 
 function App() {
 
@@ -37,15 +37,19 @@ function App() {
           <Route path="/profile">
             <Profile />
           </Route>
+
+          <Route path="/chatRoom">
+            <Chat_room />
+          </Route>
           <Route path="/Register">
             <Register />
           </Route>
-          <Route path="/PassarReceita">
-            <PassarReceitas  />
-          </Route>
-
           <Route path="/Receitas">
-            <Receitas  />
+            {s==='1' ?
+               <PassarReceitas  />
+              :
+              <Receitas  />
+            }
           </Route>
           <Route path="/test">
             <Test />
