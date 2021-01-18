@@ -45,7 +45,7 @@ class Farm extends React.Component {
             hospitaldata :  [],
 
 
-
+            med : 0,
             foto : "",
 
             farm : true,
@@ -90,7 +90,7 @@ class Farm extends React.Component {
 
         
         const cookies = new Cookies();
-        this.setState({name:cookies.get('name'), foto: cookies.get('foto')})
+        this.setState({name:cookies.get('name'), foto: cookies.get('foto'),  med: cookies.get('med')})
 
         if(cookies.get('valid')!=1){
           window.location.href='./login';
@@ -176,8 +176,8 @@ class Farm extends React.Component {
 
             return (
                 <div>
-                     
-                <header class="header black-bg">
+                 {this.state.med == 1 ?
+                    <header class="header black-bg" style={{backgroundColor: '#132639'}}>
                     <div class="sidebar-toggle-box">
                         <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation" style={{color:"white"}}></div>
                     </div>
@@ -194,9 +194,29 @@ class Farm extends React.Component {
                         </ul>
                     </div>
                 </header>
+                 :
+                 <header class="header black-bg">
+                 <div class="sidebar-toggle-box">
+                     <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation" style={{color:"white"}}></div>
+                 </div>
 
+                 <a href="/" class="logo"><b>Health<span>Connect</span></b></a>
+
+
+                 <div class="top-menu">
+                 <ul class="nav pull-right top-menu">
+                     <li><a class="logout" onClick={this.Logout}>Logout</a></li>
+                     </ul>
+                     <ul class="nav pull-right top-menu">
+                     <li><a class="logout" style={{backgroundColor:'#99ccff'}} href="/profile"> <i class="fa fa-user"></i>  Profile</a></li>
+                     </ul>
+                 </div>
+             </header>
+    }
+                
+                {this.state.med == 1 ?
                 <aside>
-                    <div id="sidebar" class="nav-collapse ">
+                    <div id="sidebar" class="nav-collapse "  style={{backgroundColor: "#204060"}}   >
                         <ul class="sidebar-menu" id="nav-accordion">
                         <div style={{color:"white", textAlign:"center"}}>
                           <h3 style={{color:"white", alignContent:"center"}}>
@@ -234,7 +254,48 @@ class Farm extends React.Component {
                         </ul>
                     </div>
                 </aside>  
+:
 
+            <aside>
+            <div id="sidebar" class="nav-collapse ">
+                <ul class="sidebar-menu" id="nav-accordion">
+                <div style={{color:"white", textAlign:"center"}}>
+                <h3 style={{color:"white", alignContent:"center"}}>
+                    <Clock format="HH:mm" interval={1000} ticking={true}  />
+                </h3> 
+                <br></br>
+                </div>
+                <p class="centered"><a href="profile.html"><img src={this.state.foto} class="img-circle" width="80"/></a><div></div></p>
+                
+                <h5 class="centered">{this.state.name}</h5>
+                <li class="mt">
+                    <a  href="/">
+                    <i class="fa fa-calendar-o"></i>
+                    <span>Home</span>
+                    </a>
+                </li>
+                
+                <li class="mt">
+                    <a class="active dcjq-parent"  href="/Farm">
+                    <i class="fa fa-map-marker"></i>
+                    <span>Nearby</span>
+                    </a>
+                </li>
+
+                <li class="mt">
+                <a href="/Receitas">
+                    <i class="fa fa-medkit"></i>
+                    <span>Prescriptions</span>
+                    </a>
+                </li>
+                <li class="mt">
+                <br/>
+                <br/>
+                </li>
+                </ul>
+            </div>
+            </aside>  
+                }
                 {this.state.loading || this.state.lat==0 ?  
                     <section id="main-content">
                      <div class="container">

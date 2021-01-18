@@ -146,7 +146,7 @@ class PassarReceitas extends React.Component {
        
             return (
                 <div>     
-                  <header class="header black-bg">
+                  <header class="header black-bg"  style={{backgroundColor: "#132639"}}>
                     <div class="sidebar-toggle-box">
                       <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation" style={{color:"white"}}></div>
                     </div>
@@ -162,7 +162,7 @@ class PassarReceitas extends React.Component {
                   </header>
 
                   <aside>
-                    <div id="sidebar" class="nav-collapse ">
+                    <div id="sidebar" class="nav-collapse " style={{backgroundColor: "#204060"}}>
                         <ul class="sidebar-menu" id="nav-accordion">
                           <div style={{color:"white", textAlign:"center"}}>
                             <h3 style={{color:"white", alignContent:"center"}}>

@@ -152,7 +152,7 @@ class Home extends React.Component {
         }else{
             return (
                 <div>     
-                  <header className="header black-bg">
+                  <header className="header black-bg" style={{backgroundColor: "#132639"}}>
                     <div className="sidebar-toggle-box">
                       <div className="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation" style={{color:"white"}}></div>
                     </div>
@@ -167,8 +167,8 @@ class Home extends React.Component {
                     </div>
                   </header>
 
-                  <aside>
-                    <div id="sidebar" className="nav-collapse collapse">
+                  <aside >
+                    <div id="sidebar" className="nav-collapse collapse" style={{backgroundColor: "#204060"}}>
                         <ul className="sidebar-menu" id="nav-accordion">
                           <div style={{color:"white", textAlign:"center"}}>
                             <h3 style={{color:"white", alignContent:"center"}}>
